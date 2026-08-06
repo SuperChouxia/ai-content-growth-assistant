@@ -1,0 +1,2556 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FF4D3D" />
+    <title>巴布 - 自媒体运营助理</title>
+    <link rel="icon" type="image/png" href="./assets/brand/babu-favicon.png" />
+    <link rel="stylesheet" href="./styles.css?v=20260803-home-auth-v31" />
+    <style id="workspace-page-layouts">
+      body.workspace-mode[data-current-screen="production"] {
+        --creation-content-max: 1920px;
+        --creation-content-gutter: 48px;
+        --creation-content-gutter-total: 96px;
+        min-width: 1180px;
+        overflow: hidden;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .app-shell {
+        display: grid !important;
+        grid-template-columns: 108px 300px minmax(0, 1fr) !important;
+        min-height: 100vh;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .sidebar {
+        grid-column: 1;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .context-sidebar {
+        grid-column: 2;
+        display: flex !important;
+        flex-direction: column;
+        height: calc(100vh - 36px);
+        margin: 18px 0;
+        padding: 26px 18px;
+        overflow: hidden;
+        border: 0;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.76);
+        box-shadow: none;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .context-sidebar[hidden] {
+        display: none !important;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .context-generation-settings:empty {
+        display: none !important;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .workspace {
+        grid-column: 3;
+        width: auto;
+        min-width: 0;
+        height: calc(100vh - 36px);
+        min-height: 0;
+        margin: 18px 18px 18px 12px;
+        overflow: hidden;
+        border: 1px solid #e6e9ef;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 14px 38px rgba(31, 42, 68, 0.06);
+      }
+
+      body.workspace-mode[data-current-screen="production"] .screen-area,
+      body.workspace-mode[data-current-screen="production"] .screen[data-view="production"] {
+        height: 100%;
+        min-height: 0;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .screen[data-view="production"] {
+        padding: 0;
+        overflow-y: auto;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .production-toolbar {
+        width: min(calc(100% - var(--creation-content-gutter-total)), var(--creation-content-max));
+        min-height: 82px;
+        margin-left: var(--creation-content-gutter);
+        padding: 18px 0;
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 1px solid #e7e9eb;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .production-account-switcher {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .mode-switch {
+        grid-column: 1;
+        justify-self: start;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .history-link {
+        grid-column: 2;
+        justify-self: end;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .production-toolbar {
+        display: none !important;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .collapsed-content-summary {
+        width: min(calc(100% - var(--creation-content-gutter-total)), var(--creation-content-max));
+        max-width: none;
+        min-height: 64px;
+        margin: 0 0 0 var(--creation-content-gutter);
+        padding: 10px 0;
+        display: grid;
+        grid-template-columns: 112px minmax(260px, 420px) minmax(300px, 500px);
+        align-items: center;
+        justify-content: start;
+        gap: 0 20px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .collapsed-content-summary .summary-item {
+        width: 100%;
+        min-width: 0;
+        padding: 0 22px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .inline-note-detail {
+        width: min(calc(100% - var(--creation-content-gutter-total)), var(--creation-content-max));
+        max-width: none;
+        margin: 16px 0 0 var(--creation-content-gutter);
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .inline-detail-scroll {
+        grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .note-result-section {
+        grid-row: auto !important;
+        align-content: start;
+        gap: 24px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .readonly-field {
+        display: grid;
+        gap: 8px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .readonly-field-label {
+        color: #6d737a;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .readonly-title {
+        color: #17191c;
+        font-size: 17px;
+        line-height: 1.55;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .readonly-body {
+        min-height: 160px;
+        margin: 0;
+        color: #2e3338;
+        font-size: 14px;
+        line-height: 1.9;
+        white-space: pre-wrap;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .readonly-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .readonly-topics span {
+        padding: 5px 0;
+        color: #4e555c;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-generation-controls {
+        display: grid;
+        grid-template-columns: 180px 136px;
+        gap: 12px;
+        align-items: end;
+        justify-content: start;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-count-field {
+        display: grid;
+        gap: 8px;
+        color: #6d737a;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-count-field select,
+      body.workspace-mode[data-current-screen="production"].note-detail-open .generate-detail-images-btn {
+        width: 100%;
+        min-height: 44px;
+        margin: 0;
+        border-radius: 5px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-count-field select {
+        padding: 0 12px;
+        border: 1px solid #d8dcdf;
+        background: #ffffff;
+        color: #17191c;
+        font: inherit;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-generation-state {
+        min-height: 128px;
+        padding: 24px 0;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 8px;
+        color: #747b82;
+        text-align: center;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-generation-state img {
+        width: 28px;
+        height: 28px;
+        opacity: 0.62;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-generation-state.is-loading img {
+        animation: image-generation-pulse 0.9s ease-in-out infinite alternate;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-generation-state strong {
+        color: #33383d;
+        font-size: 14px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .generated-image-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 8px;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .generated-image-grid[hidden],
+      body.workspace-mode[data-current-screen="production"].note-detail-open .image-generation-state[hidden] {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .generated-image-item {
+        min-width: 0;
+        margin: 0;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .generated-image-item img {
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        display: block;
+        border-radius: 6px;
+        object-fit: cover;
+        background: #f2f4f5;
+      }
+
+      body.workspace-mode[data-current-screen="production"].note-detail-open .generated-image-item figcaption {
+        margin-top: 7px;
+        color: #5f666d;
+        font-size: 12px;
+      }
+
+      @keyframes image-generation-pulse {
+        from { opacity: 0.35; transform: scale(0.94); }
+        to { opacity: 0.86; transform: scale(1); }
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-workbench {
+        width: min(calc(100% - var(--creation-content-gutter-total)), var(--creation-content-max));
+        margin-left: var(--creation-content-gutter);
+        margin-right: auto;
+        padding: 0 0 52px;
+        border: 0;
+        border-radius: 0;
+        background: #ffffff;
+        box-shadow: none;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin: 0;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-grid > .panel {
+        margin: 0;
+        padding: 26px 0 30px;
+        border: 0;
+        border-bottom: 1px solid #e7e9eb;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .product-mainline-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .product-mainline-option {
+        min-width: 0;
+        min-height: 72px;
+        padding: 8px 12px 8px 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 1.45;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .product-mainline-option::before {
+        content: "";
+        width: 54px;
+        height: 54px;
+        flex: 0 0 54px;
+        border-radius: 6px;
+        background-color: #f1f2f4;
+        background-position: center;
+        background-size: cover;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .product-mainline-option:nth-child(1)::before {
+        background-image: url("./assets/home/pet-bowl-detail.webp");
+      }
+
+      body.workspace-mode[data-current-screen="production"] .product-mainline-option:nth-child(2)::before {
+        background-image: url("./assets/home/cat-smart-feeder.webp");
+      }
+
+      body.workspace-mode[data-current-screen="production"] .product-mainline-option:nth-child(3)::before {
+        background-image: url("./assets/home/cat-litter-box.webp");
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-command-panel {
+        display: grid !important;
+        grid-template-columns: minmax(520px, 1fr) 190px 190px;
+        align-items: start;
+        gap: 20px 24px;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-command-panel > h3 {
+        grid-column: 1 / -1;
+        margin: 0;
+        white-space: normal;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-command-panel .control-block {
+        min-width: 0;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-command-panel .option-group {
+        width: 100%;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .generation-command-panel .primary-btn.full-width {
+        grid-column: auto;
+        align-self: end;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .production-preview-empty {
+        min-height: 260px;
+        padding: 52px 0;
+        border-bottom: 1px solid #e7e9eb;
+      }
+
+      body.workspace-mode[data-current-screen="production"] .note-list-head,
+      body.workspace-mode[data-current-screen="production"] .note-output-card {
+        grid-template-columns: 48px minmax(420px, 1fr) minmax(300px, 0.72fr);
+      }
+
+      @media (max-width: 1680px) {
+        body.workspace-mode[data-current-screen="production"] {
+          --creation-content-gutter: 36px;
+          --creation-content-gutter-total: 72px;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel {
+          grid-template-columns: minmax(0, 1fr) 160px 170px;
+          gap: 18px;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel .primary-btn.full-width {
+          grid-column: 3;
+          justify-self: end;
+          width: 170px;
+        }
+      }
+
+      @media (max-width: 1360px) {
+        body.workspace-mode[data-current-screen="production"] {
+          --creation-content-max: 1040px;
+          --creation-content-gutter: 42px;
+          --creation-content-gutter-total: 84px;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .app-shell {
+          grid-template-columns: 100px 280px minmax(0, 1fr) !important;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .context-sidebar {
+          padding-right: 16px;
+          padding-left: 16px;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel {
+          grid-template-columns: minmax(0, 1fr) 150px 150px;
+          gap: 18px;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel > h3 {
+          grid-column: 1 / -1;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel .primary-btn.full-width {
+          grid-column: auto;
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 1240px) {
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel {
+          grid-template-columns: minmax(0, 1fr) 150px 150px;
+        }
+
+        body.workspace-mode[data-current-screen="production"] .generation-command-panel .primary-btn.full-width {
+          grid-column: 3;
+          justify-self: end;
+          width: 150px;
+        }
+      }
+
+      body.workspace-mode[data-current-screen="projects"] {
+        --account-content-max: 1920px;
+        --account-content-gutter: 48px;
+      }
+
+      body.workspace-mode[data-current-screen="projects"] .account-detail-view {
+        padding: 44px var(--account-content-gutter) 56px;
+      }
+
+      body.workspace-mode[data-current-screen="projects"] .account-profile-hero,
+      body.workspace-mode[data-current-screen="projects"] .account-profile-content {
+        width: min(100%, var(--account-content-max));
+      }
+
+      body.workspace-mode[data-current-screen="projects"] .account-overview-status {
+        grid-template-columns: 300px minmax(0, 1fr);
+      }
+
+      body.workspace-mode[data-current-screen="projects"] .account-overview-main {
+        grid-template-columns: minmax(320px, 0.7fr) minmax(620px, 1.3fr);
+        gap: 72px;
+      }
+
+      @media (max-width: 1680px) {
+        body.workspace-mode[data-current-screen="projects"] {
+          --account-content-gutter: 36px;
+        }
+
+        body.workspace-mode[data-current-screen="projects"] .account-overview-status {
+          grid-template-columns: 260px minmax(0, 1fr);
+        }
+
+        body.workspace-mode[data-current-screen="projects"] .account-overview-main {
+          grid-template-columns: minmax(280px, 0.8fr) minmax(460px, 1.2fr);
+          gap: 48px;
+        }
+      }
+
+      body.workspace-mode[data-current-screen="history"] {
+        --history-content-max: 1920px;
+        --history-content-gutter: 48px;
+        --history-content-gutter-total: 96px;
+        min-width: 1180px;
+        overflow: hidden;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .app-shell {
+        display: grid !important;
+        grid-template-columns: 108px 300px minmax(0, 1fr) !important;
+        min-height: 100vh;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .sidebar {
+        grid-column: 1;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .context-sidebar {
+        grid-column: 2;
+        height: calc(100vh - 36px);
+        margin: 18px 0;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .workspace {
+        grid-column: 3;
+        width: auto;
+        min-width: 0;
+        height: calc(100vh - 36px);
+        min-height: 0;
+        margin: 18px 18px 18px 12px;
+        overflow: hidden;
+        border: 1px solid #e6e9ef;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 14px 38px rgba(31, 42, 68, 0.06);
+      }
+
+      body.workspace-mode[data-current-screen="history"] .topbar {
+        width: min(calc(100% - var(--history-content-gutter-total)), var(--history-content-max));
+        min-height: 66px;
+        margin: 0 0 0 var(--history-content-gutter);
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: #ffffff;
+        box-shadow: none;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .topbar h1 {
+        font-size: 22px;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .topbar .back-button {
+        border-color: #d9dde4;
+        background: #ffffff;
+        color: #555c66;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .topbar .back-button:hover {
+        border-color: #cfd4dc;
+        background: #f7f8fa;
+        color: #30363a;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .screen-area {
+        height: calc(100% - 66px);
+        min-height: 0;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .screen[data-view="history"] {
+        width: min(calc(100% - var(--history-content-gutter-total)), var(--history-content-max));
+        height: 100%;
+        margin-left: var(--history-content-gutter);
+        padding: 20px 0 40px;
+        overflow-y: auto;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .screen[data-view="history"] .page-head {
+        display: block;
+        margin: 0 0 18px;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .screen[data-view="history"] .page-head p {
+        color: #777f88;
+        line-height: 1.65;
+      }
+
+      body.workspace-mode[data-current-screen="history"] [data-state-show="hasRecords"] {
+        display: block;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-account-summary {
+        min-height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        border-bottom: 1px solid #e5e8eb;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-account-summary h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-account-summary span {
+        color: #777f88;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-list-head,
+      body.workspace-mode[data-current-screen="history"] .history-note-row {
+        display: grid;
+        grid-template-columns: 72px minmax(260px, 1fr) minmax(220px, 0.72fr) 140px 104px;
+        gap: 18px;
+        align-items: center;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-list-head {
+        min-height: 42px;
+        padding: 0 14px;
+        border-bottom: 1px solid #e5e8eb;
+        color: #777f88;
+        font-size: 12px;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-list-head[hidden] {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-list {
+        display: grid;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-row {
+        width: 100%;
+        min-height: 112px;
+        padding: 14px;
+        border: 0;
+        border-bottom: 1px solid #e5e8eb;
+        background: #ffffff;
+        color: #17191c;
+        text-align: left;
+        transition: background 0.16s ease;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-row:hover {
+        background: #fafbfc;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-cover {
+        width: 58px;
+        height: 72px;
+        display: block;
+        border-radius: 5px;
+        object-fit: cover;
+        background: #f2f4f5;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-copy {
+        min-width: 0;
+        display: grid;
+        gap: 7px;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-copy strong {
+        overflow: hidden;
+        font-size: 16px;
+        line-height: 1.45;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-copy small {
+        display: -webkit-box;
+        overflow: hidden;
+        color: #6f767d;
+        font-size: 13px;
+        line-height: 1.6;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px 10px;
+        color: #525960;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-time {
+        color: #727a82;
+        font-size: 13px;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-note-action {
+        justify-self: end;
+        color: #ff4d3d;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-notes-empty {
+        min-height: 320px;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 12px;
+        color: #727a82;
+        text-align: center;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-notes-empty[hidden] {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="history"] .history-notes-empty img {
+        width: 30px;
+        height: 30px;
+        opacity: 0.58;
+      }
+
+      @media (max-width: 1680px) {
+        body.workspace-mode[data-current-screen="history"] {
+          --history-content-gutter: 36px;
+          --history-content-gutter-total: 72px;
+        }
+      }
+
+      @media (max-width: 1360px) {
+        body.workspace-mode[data-current-screen="history"] {
+          --history-content-max: 1040px;
+          --history-content-gutter: 42px;
+          --history-content-gutter-total: 84px;
+        }
+
+        body.workspace-mode[data-current-screen="history"] .app-shell {
+          grid-template-columns: 100px 280px minmax(0, 1fr) !important;
+        }
+      }
+
+      @media (max-width: 1240px) {
+        body.workspace-mode[data-current-screen="history"] .history-note-list-head,
+        body.workspace-mode[data-current-screen="history"] .history-note-row {
+          grid-template-columns: 64px minmax(240px, 1fr) minmax(180px, 0.7fr) 120px 92px;
+          gap: 12px;
+        }
+      }
+
+      body.workspace-mode[data-current-screen="note"] {
+        --note-content-max: 1920px;
+        --note-content-gutter: 48px;
+        --note-content-gutter-total: 96px;
+        min-width: 1180px;
+        overflow: hidden;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .app-shell {
+        display: grid !important;
+        grid-template-columns: 108px 300px minmax(0, 1fr) !important;
+        min-height: 100vh;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .context-sidebar {
+        height: calc(100vh - 36px);
+        margin: 18px 0;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .workspace {
+        width: auto;
+        min-width: 0;
+        height: calc(100vh - 36px);
+        min-height: 0;
+        margin: 18px 18px 18px 12px;
+        overflow: hidden;
+        border: 1px solid #e6e9ef;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 14px 38px rgba(31, 42, 68, 0.06);
+      }
+
+      body.workspace-mode[data-current-screen="note"] .topbar {
+        width: min(calc(100% - var(--note-content-gutter-total)), var(--note-content-max));
+        min-height: 66px;
+        margin: 0 0 0 var(--note-content-gutter);
+        padding: 0;
+        border: 0;
+        background: #ffffff;
+        box-shadow: none;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .screen-area {
+        height: calc(100% - 66px);
+        min-height: 0;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .screen[data-view="note"] {
+        width: min(calc(100% - var(--note-content-gutter-total)), var(--note-content-max));
+        height: 100%;
+        margin-left: var(--note-content-gutter);
+        padding: 16px 0 40px;
+        overflow-y: auto;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail-head {
+        padding: 8px 0 20px;
+        border-bottom: 1px solid #e1e4e7;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail-head span {
+        color: #777f88;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail-head h2 {
+        margin: 5px 0 0;
+        font-size: 24px;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.82fr) minmax(520px, 1.18fr);
+        align-items: start;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .detail-section {
+        padding: 28px 30px 16px 0;
+        border: 0;
+        border-radius: 0;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-generation-section {
+        padding-right: 0;
+        padding-left: 30px;
+        border-left: 1px solid #e1e4e7;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .readonly-field {
+        display: grid;
+        gap: 8px;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .note-result-section {
+        display: grid;
+        align-content: start;
+        gap: 24px;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .readonly-field-label {
+        color: #6d737a;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .readonly-title {
+        font-size: 17px;
+        line-height: 1.55;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .readonly-body {
+        min-height: 160px;
+        margin: 0;
+        color: #2e3338;
+        font-size: 14px;
+        line-height: 1.9;
+        white-space: pre-wrap;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .readonly-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .readonly-topics span {
+        padding: 5px 0;
+        color: #4e555c;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-generation-controls {
+        display: grid;
+        grid-template-columns: 180px 136px;
+        gap: 12px;
+        align-items: end;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-count-field {
+        display: grid;
+        gap: 8px;
+        color: #6d737a;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-count-field select,
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .generate-detail-images-btn {
+        width: 100%;
+        min-height: 44px;
+        margin: 0;
+        border-radius: 5px;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-count-field select {
+        padding: 0 12px;
+        border: 1px solid #d8dcdf;
+        background: #ffffff;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-generation-state {
+        min-height: 128px;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 8px;
+        color: #747b82;
+        text-align: center;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-generation-state[hidden],
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .generated-image-grid[hidden] {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .image-generation-state img {
+        width: 28px;
+        height: 28px;
+        opacity: 0.62;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .generated-image-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 8px;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .generated-image-item img {
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        display: block;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+
+      body.workspace-mode[data-current-screen="note"] .history-note-detail .generated-image-item figcaption {
+        margin-top: 7px;
+        color: #5f666d;
+        font-size: 12px;
+      }
+
+      @media (max-width: 1680px) {
+        body.workspace-mode[data-current-screen="note"] {
+          --note-content-gutter: 36px;
+          --note-content-gutter-total: 72px;
+        }
+      }
+
+      @media (max-width: 1360px) {
+        body.workspace-mode[data-current-screen="note"] {
+          --note-content-max: 1040px;
+          --note-content-gutter: 42px;
+          --note-content-gutter-total: 84px;
+        }
+
+        body.workspace-mode[data-current-screen="note"] .app-shell {
+          grid-template-columns: 100px 280px minmax(0, 1fr) !important;
+        }
+      }
+
+      body.workspace-mode[data-current-screen="chat"] {
+        --chat-content-max: 1400px;
+        min-width: 1180px;
+        overflow: hidden;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .app-shell {
+        display: grid !important;
+        grid-template-columns: 108px 320px minmax(0, 1fr) !important;
+        min-height: 100vh;
+        background: #f7f8fd;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .sidebar {
+        grid-column: 1;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-sidebar {
+        grid-column: 2;
+        height: calc(100vh - 36px);
+        margin: 18px 0;
+        padding: 26px 18px 22px;
+        overflow: hidden;
+        border: 0;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: none;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-sidebar-head {
+        gap: 14px;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-sidebar h2 {
+        font-size: 22px;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-create-btn {
+        min-height: 44px;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-account-section {
+        min-height: 0;
+        flex: 1;
+        margin-top: 22px;
+        overflow: hidden;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-account-list {
+        height: calc(100% - 34px);
+        display: block;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-group-label {
+        margin: 14px 10px 5px;
+        color: #959ba2;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .context-empty[hidden] {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-item {
+        width: 100%;
+        min-height: 72px;
+        padding: 12px 10px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 5px 12px;
+        border: 0;
+        border-bottom: 1px solid #eceef1;
+        border-radius: 0;
+        background: transparent;
+        color: #1d2024;
+        text-align: left;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-item:hover {
+        background: #f7f8fa;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-item.active {
+        border-bottom-color: #ffd8d2;
+        background: #fff2ef;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-item strong {
+        min-width: 0;
+        overflow: hidden;
+        font-size: 14px;
+        line-height: 1.45;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-item time {
+        color: #92989f;
+        font-size: 11px;
+        line-height: 1.8;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .chat-history-item span {
+        grid-column: 1 / -1;
+        overflow: hidden;
+        color: #737a82;
+        font-size: 12px;
+        line-height: 1.5;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .workspace {
+        grid-column: 3;
+        width: auto;
+        min-width: 0;
+        height: calc(100vh - 36px);
+        min-height: 0;
+        margin: 18px 18px 18px 12px;
+        overflow: hidden;
+        border: 1px solid #e6e9ef;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 14px 38px rgba(31, 42, 68, 0.06);
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .topbar {
+        display: none;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .screen-area,
+      body.workspace-mode[data-current-screen="chat"] .screen[data-view="chat"] {
+        height: 100%;
+        min-height: 0;
+      }
+
+      body.workspace-mode[data-current-screen="chat"] .screen[data-view="chat"] {
+        padding: 0;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      .chat-workspace {
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-conversation-head {
+        min-height: 66px;
+        padding: 0 34px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #eceef1;
+      }
+
+      .chat-conversation-head-inner {
+        width: min(100%, var(--chat-content-max));
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .chat-conversation-head h2 {
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        font-size: 17px;
+        line-height: 1.4;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .chat-conversation-head span {
+        flex: 0 0 auto;
+        color: #858c94;
+        font-size: 12px;
+      }
+
+      .chat-thread {
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+      }
+
+      .chat-message-list {
+        width: min(calc(100% - 72px), var(--chat-content-max));
+        min-height: 100%;
+        margin: 0 auto;
+        padding: 38px 0 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .chat-message {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 13px;
+        align-items: start;
+      }
+
+      .chat-message.user {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: end;
+      }
+
+      .chat-message-avatar {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid #e3e6e9;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .chat-message-avatar img {
+        width: 23px;
+        height: 23px;
+        display: block;
+        object-fit: contain;
+      }
+
+      .chat-message-content {
+        max-width: 1120px;
+        color: #272b30;
+        font-size: 15px;
+        line-height: 1.82;
+        white-space: pre-wrap;
+      }
+
+      .chat-message.user .chat-message-content {
+        max-width: min(78%, 940px);
+        padding: 11px 15px;
+        border-radius: 8px;
+        background: #f1f3f5;
+        color: #202327;
+      }
+
+      .chat-message.is-typing .chat-message-content {
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .chat-message.is-typing i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #92989f;
+        animation: chatTyping 1s ease-in-out infinite;
+      }
+
+      .chat-message.is-typing i:nth-child(2) {
+        animation-delay: 0.14s;
+      }
+
+      .chat-message.is-typing i:nth-child(3) {
+        animation-delay: 0.28s;
+      }
+
+      @keyframes chatTyping {
+        0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+        30% { opacity: 1; transform: translateY(-3px); }
+      }
+
+      .chat-empty-state {
+        min-height: 100%;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 22px;
+        padding: 48px 0 84px;
+      }
+
+      .chat-empty-brand {
+        display: grid;
+        place-items: center;
+        gap: 14px;
+      }
+
+      .chat-empty-brand img {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+      }
+
+      .chat-empty-brand h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .chat-suggestion-grid {
+        width: min(100%, 940px);
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .chat-suggestion {
+        min-height: 66px;
+        padding: 13px 15px;
+        border: 1px solid #dde1e5;
+        border-radius: 7px;
+        background: #ffffff;
+        color: #373c42;
+        font-size: 13px;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      .chat-suggestion:hover {
+        border-color: #cfd4d9;
+        background: #fafbfc;
+      }
+
+      .chat-composer-shell {
+        flex: 0 0 auto;
+        padding: 12px 34px 24px;
+        background: #ffffff;
+      }
+
+      .chat-composer {
+        width: min(100%, var(--chat-content-max));
+        min-height: 64px;
+        margin: 0 auto;
+        padding: 11px 11px 11px 18px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 42px;
+        gap: 12px;
+        align-items: end;
+        border: 1px solid #d8dde1;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 10px 26px rgba(31, 42, 68, 0.08);
+      }
+
+      .chat-composer:focus-within {
+        border-color: #aeb5bc;
+      }
+
+      .chat-composer textarea {
+        width: 100%;
+        min-height: 40px;
+        max-height: 150px;
+        padding: 9px 0 7px;
+        resize: none;
+        overflow-y: auto;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #24282c;
+        font: inherit;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .chat-composer textarea::placeholder {
+        color: #969ca3;
+      }
+
+      .chat-send-button {
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 7px;
+        background: #ff4d3d;
+      }
+
+      .chat-send-button img {
+        width: 18px;
+        height: 18px;
+        filter: brightness(0) invert(1);
+        transform: rotate(90deg);
+      }
+
+      .chat-send-button:disabled {
+        cursor: default;
+        background: #d9dde1;
+      }
+
+      .chat-composer-note {
+        width: min(100%, var(--chat-content-max));
+        margin: 8px auto 0;
+        color: #9aa0a6;
+        font-size: 11px;
+        text-align: center;
+      }
+
+      @media (max-width: 1360px) {
+        body.workspace-mode[data-current-screen="chat"] .app-shell {
+          grid-template-columns: 100px 280px minmax(0, 1fr) !important;
+        }
+
+        .chat-message-list,
+        .chat-conversation-head-inner,
+        .chat-composer,
+        .chat-composer-note {
+          width: min(calc(100% - 48px), 940px);
+        }
+      }
+    </style>
+</head>
+  <body>
+    <div class="app-toast" data-app-toast role="status" aria-live="polite"></div>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <button class="brand-block brand-home-link" type="button" data-action="go-home" aria-label="回到首页">
+          <img class="brand-logo-image" src="./assets/brand/babu-logo-primary.png" alt="巴布，自媒体运营助理" />
+          <img class="workspace-brand-icon" src="./assets/brand/babu-app-icon.png" alt="" />
+          <span class="workspace-brand-name">巴布</span>
+        </button>
+        <p class="home-header-note">从账号开始，把内容做出来</p>
+
+        <nav class="workspace-nav" data-auth-show="loggedIn" aria-label="工作台菜单" hidden>
+          <div class="workspace-nav-main">
+            <button class="workspace-nav-item" type="button" data-screen="chat" aria-label="对话" title="对话">
+              <img src="./assets/icons/message-circle.svg" alt="" />
+              <span>对话</span>
+            </button>
+            <button class="workspace-nav-item" type="button" data-screen="production" aria-label="创作" title="创作">
+              <img src="./assets/icons/atom.svg" alt="" />
+              <span>创作</span>
+            </button>
+            <button class="workspace-nav-item" type="button" data-screen="projects" aria-label="账号" title="账号">
+              <img src="./assets/icons/orbit.svg" alt="" />
+              <span>账号</span>
+            </button>
+          </div>
+          <div class="workspace-nav-bottom">
+            <div class="workspace-credit">
+              <img src="./assets/icons/zap.svg" alt="" />
+              <span>积分</span>
+              <strong>100</strong>
+            </div>
+            <div class="account-menu workspace-profile-menu">
+              <button class="workspace-profile-trigger" type="button">
+                <img src="./assets/icons/user-round.svg" alt="" />
+                <span>个人资料</span>
+              </button>
+              <button class="logout-popover" type="button" data-action="logout">退出登录</button>
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      <aside class="context-sidebar" data-auth-show="loggedIn" hidden>
+        <div class="context-sidebar-head">
+          <h2 data-context-title>账号</h2>
+          <label class="context-search">
+            <input type="search" placeholder="在当前列表搜索" data-account-search />
+            <img src="./assets/icons/search.svg" alt="" />
+          </label>
+          <button class="context-create-btn" type="button" data-go="create" data-context-create>
+            <img src="./assets/icons/plus.svg" alt="" />
+            <span>创建账号</span>
+          </button>
+        </div>
+        <div class="context-account-section">
+          <div class="context-section-head">
+            <div class="context-section-title" data-context-section-title>我的账号</div>
+            <button class="context-add-inline" type="button" data-go="create" data-context-add-inline aria-label="添加账号" title="添加账号">
+              <img src="./assets/icons/plus.svg" alt="" />
+            </button>
+          </div>
+          <div class="context-account-list" data-context-account-list></div>
+          <p class="context-empty" data-context-empty>暂无账号</p>
+        </div>
+        <div class="context-generation-settings" data-context-generation-settings hidden></div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <button class="secondary-btn back-button" type="button" data-action="go-back" hidden>返回上一步</button>
+          <div class="topbar-title">
+            <h1 id="screenTitle">登录</h1>
+          </div>
+          <button class="create-cancel-btn" type="button" data-action="cancel-create" hidden>取消</button>
+        </header>
+
+        <main class="screen-area">
+          <section class="screen home-screen" data-view="login">
+            <div class="babu-home babu-canvas-home">
+              <div class="canvas-home-layout">
+                <section class="canvas-home-intro" aria-labelledby="homeTitle">
+                  <p class="canvas-home-audience">给品牌主、小团队和个人 IP</p>
+                  <h2 id="homeTitle"><span>巴布，</span>你的自媒体运营助理</h2>
+                  <p class="canvas-home-summary">管理多个账号，持续创作可发布内容</p>
+                  <button class="canvas-home-cta" type="button" data-action="home-primary" data-home-primary>
+                    <span>立即开始</span>
+                    <img src="./assets/icons/arrow-left.svg" alt="" />
+                  </button>
+                </section>
+
+                <section
+                  class="canvas-home-studio is-preview-only"
+                  data-home-preview
+                  data-home-studio-canvas
+                  aria-label="多账号内容持续生成预览"
+                  aria-disabled="true"
+                  inert
+                >
+                  <header class="canvas-account-strip">
+                    <div class="canvas-account-label"><i></i><strong>多账号管理</strong></div>
+                    <div class="canvas-account-chips">
+                      <div class="canvas-account-chip active">
+                        <img src="./assets/home/pet-bowl-detail.webp" alt="" />
+                        <span><strong>爪边生活</strong><small>品牌号</small></span>
+                        <img class="canvas-chip-arrow" src="./assets/icons/arrow-left.svg" alt="" />
+                      </div>
+                      <div class="canvas-account-chip">
+                        <img src="./assets/home/cat-sofa.webp" alt="" />
+                        <span><strong>小爪妈日记</strong><small>个人号</small></span>
+                        <img class="canvas-chip-arrow" src="./assets/icons/arrow-left.svg" alt="" />
+                      </div>
+                      <div class="canvas-account-chip">
+                        <img src="./assets/home/cat-smart-feeder.webp" alt="" />
+                        <span><strong>汪星人研究所</strong><small>个人号</small></span>
+                        <img class="canvas-chip-arrow" src="./assets/icons/arrow-left.svg" alt="" />
+                      </div>
+                      <div class="canvas-account-chip">
+                        <img src="./assets/home/cat-litter-box.webp" alt="" />
+                        <span><strong>植萃研究室</strong><small>品牌号</small></span>
+                        <img class="canvas-chip-arrow" src="./assets/icons/arrow-left.svg" alt="" />
+                      </div>
+                    </div>
+                  </header>
+
+                  <div class="canvas-generation-stage">
+                    <article class="canvas-writing-area">
+                      <div class="canvas-generation-status">
+                        <img src="./assets/icons/sparkles.svg" alt="" />
+                        <strong data-home-studio-status aria-live="polite">AI 正在生成中</strong>
+                        <span>· 逐行创作</span>
+                      </div>
+                      <ol class="canvas-writing-lines">
+                        <li class="canvas-line-title"><span>养宠家庭必备清洁好物，真的能省心很多！</span><i></i></li>
+                        <li>作为养了两只狗的家长，深知打扫卫生的崩溃瞬间。</li>
+                        <li>这几款清洁好物，轻松搞定毛发、异味和日常清洁，</li>
+                        <li>新手也能快速上手！</li>
+                        <li class="canvas-check-line"><img src="./assets/icons/circle-check.svg" alt="" />除毛滚刷：沙发衣物一滚即净</li>
+                        <li class="canvas-check-line"><img src="./assets/icons/circle-check.svg" alt="" />宠物除臭喷雾：分解异味不刺鼻</li>
+                        <li class="canvas-check-line"><img src="./assets/icons/circle-check.svg" alt="" />地面清洁剂：拖地吸毛一次完成</li>
+                        <li class="canvas-check-line"><img src="./assets/icons/circle-check.svg" alt="" />洗衣除毛球：衣服干净无残留</li>
+                      </ol>
+                    </article>
+
+                    <figure class="canvas-image-area">
+                      <figcaption>
+                        <img src="./assets/icons/sparkles.svg" alt="" />
+                        <span>配图构思中...</span>
+                      </figcaption>
+                      <img src="./assets/home/pet-cleaning-dog.png" alt="金毛犬和宠物清洁用品" />
+                    </figure>
+                  </div>
+
+                  <div class="canvas-hidden-progress" aria-hidden="true">
+                    <span data-home-studio-progress>18%</span>
+                    <i><b data-home-studio-progress-bar></b></i>
+                  </div>
+
+                  <div class="canvas-prompt ai-composer" aria-hidden="true">
+                    <span class="canvas-prompt-label">
+                      <img src="./assets/icons/file-pen-line.svg" alt="" />
+                      <strong>AI 提示词</strong>
+                    </span>
+                    <span class="canvas-prompt-placeholder">输入创作想法或主题，比如：养宠家庭清洁好物推荐</span>
+                    <span class="canvas-prompt-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                    <span class="canvas-prompt-send"><img src="./assets/icons/arrow-left.svg" alt="" /></span>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="chat" hidden>
+            <div class="chat-workspace">
+              <header class="chat-conversation-head">
+                <div class="chat-conversation-head-inner">
+                  <h2 data-chat-title>新对话</h2>
+                  <span data-chat-updated>刚刚</span>
+                </div>
+              </header>
+              <div class="chat-thread" data-chat-thread>
+                <div class="chat-message-list" data-chat-messages></div>
+              </div>
+              <div class="chat-composer-shell">
+                <div class="chat-composer">
+                  <textarea rows="1" maxlength="2000" placeholder="给巴布发消息" data-chat-input aria-label="对话输入"></textarea>
+                  <button class="chat-send-button" type="button" data-action="send-chat" aria-label="发送消息" title="发送">
+                    <img src="./assets/icons/arrow-left.svg" alt="" />
+                  </button>
+                </div>
+                <p class="chat-composer-note">巴布可能会犯错，重要内容请仔细核对。</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="projects" hidden>
+            <div class="page-head workspace-canvas-head">
+              <div>
+                <h2>账号</h2>
+                <p>添加并管理用于创作的小红书账号。</p>
+              </div>
+            </div>
+            <div class="empty-state account-main-empty" data-state-show="noProject">
+              <div class="account-empty-stage">
+                <div class="account-empty-intro">
+                  <h3>添加你的第一个账号</h3>
+                  <p>填写账号基础信息，再补充品牌或个人 IP 资料。巴布会据此整理账号定位和内容方向。</p>
+                  <button class="primary-btn account-empty-action" data-go="create">
+                    <img src="./assets/icons/plus.svg" alt="" />
+                    创建账号
+                  </button>
+                </div>
+
+                <section class="account-empty-path" aria-label="添加账号后的使用步骤">
+                  <div class="account-empty-path-head">
+                    <h3>从账号资料开始创作</h3>
+                  </div>
+                  <div class="account-empty-step-list">
+                    <article class="account-empty-step">
+                      <div class="account-empty-step-icon">
+                        <img src="./assets/icons/search.svg" alt="" />
+                      </div>
+                      <div>
+                        <h4>解析账号</h4>
+                        <p>获取头像、昵称和公开数据。</p>
+                      </div>
+                    </article>
+                    <article class="account-empty-step">
+                      <div class="account-empty-step-icon">
+                        <img src="./assets/icons/target.svg" alt="" />
+                      </div>
+                      <div>
+                        <h4>整理定位</h4>
+                        <p>补充品牌或个人资料，明确内容方向。</p>
+                      </div>
+                    </article>
+                    <article class="account-empty-step">
+                      <div class="account-empty-step-icon">
+                        <img src="./assets/icons/file-pen-line.svg" alt="" />
+                      </div>
+                      <div>
+                        <h4>开始创作</h4>
+                        <p>选择账号，生成笔记和图片方案。</p>
+                      </div>
+                    </article>
+                  </div>
+                </section>
+              </div>
+              <p class="account-empty-note">每个账号都有独立资料与创作记录，后续可以继续添加多个账号。</p>
+            </div>
+            <section class="account-detail-view" data-account-detail hidden></section>
+          </section>
+
+          <section class="screen" data-view="create" hidden>
+            <div class="create-flow">
+              <section class="create-account-type-selector" data-account-type-panel>
+                <div class="create-type-heading">
+                  <h3>选择账号类型</h3>
+                  <p>账号类型保存后不可更改，选错需要重新创建账号。</p>
+                </div>
+                <div class="choice-grid">
+                  <button class="choice-card active" type="button" data-account-type="brand">
+                    <strong>品牌</strong>
+                    <span>有品牌、门店、商品的用户</span>
+                  </button>
+                  <button class="choice-card" type="button" data-account-type="ip">
+                    <strong>个人 IP</strong>
+                    <span>有专业能力、经历、观点或服务的用户</span>
+                  </button>
+                </div>
+              </section>
+
+              <nav class="create-progress" data-create-progress aria-label="创建账号进度"></nav>
+
+              <div class="create-step-panel" data-create-panel="account">
+              <section class="account-parser direct-account-entry" data-account-parser data-create-parser data-parse-state="manual" data-manual-saved="false">
+                <div class="manual-account-card" data-parse-manual>
+                  <div class="manual-avatar-field">
+                    <span>账号头像</span>
+                    <label class="manual-avatar-upload" title="上传头像">
+                      <img src="./assets/icons/image.svg" alt="" data-manual-avatar-preview />
+                      <span class="manual-avatar-copy">点击上传</span>
+                      <input type="file" accept="image/jpeg,image/png" data-manual-avatar-upload hidden />
+                    </label>
+                    <small>支持 JPG、PNG，最大 5M</small>
+                  </div>
+                  <div class="manual-account-fields">
+                    <label>账号昵称
+                      <input data-manual-name maxlength="20" placeholder="请输入小红书昵称" />
+                    </label>
+                    <label><span>小红书号 <small class="field-optional">（选填）</small></span>
+                      <input data-manual-xhs-id maxlength="24" placeholder="请输入小红书号" />
+                    </label>
+                    <label class="span-two"><span>账号简介 <small class="field-limit">最多可输入 200 个字</small></span>
+                      <textarea data-manual-bio maxlength="200" placeholder="填写你的小红书账号简介"></textarea>
+                    </label>
+                  </div>
+                </div>
+              </section>
+              </div>
+
+              <div class="create-step-panel" data-create-panel="brand" hidden>
+              <section class="panel form-panel dense">
+                <div data-account-section="brand">
+                  <div class="form-subtitle">基础信息</div>
+                  <div class="field-grid brand-name-grid">
+                    <label><span>品牌名 <small class="field-limit">（不超过 10 个字）</small></span><input maxlength="10" value="爪边生活" /></label>
+                  </div>
+                  <div>
+                    <label><span>细分方向</span></label>
+                    <div class="option-group single" aria-label="细分方向单选" data-direction-group="brand">
+                      <button class="option-chip selected" type="button" data-choice="single">宠物</button>
+                      <button class="option-chip" type="button" data-choice="single">餐饮</button>
+                      <button class="option-chip" type="button" data-choice="single">美妆</button>
+                      <button class="option-chip" type="button" data-choice="single">母婴</button>
+                      <button class="option-chip" type="button" data-choice="single">本地生活</button>
+                      <button class="option-chip" type="button" data-choice="single" data-other-choice>其他</button>
+                    </div>
+                    <label class="other-direction-field" data-other-direction hidden>
+                      <span>其他方向 <small class="field-limit">不超过 10 个字</small></span>
+                      <input data-other-direction-input maxlength="10" placeholder="请输入细分方向" />
+                    </label>
+                  </div>
+
+                  <div class="form-subtitle">定位</div>
+                  <div class="field-grid">
+                    <label><span>目标用户年龄</span>
+                      <div class="range-control">
+                        <select><option>20 岁</option><option selected>25 岁</option><option>30 岁</option></select>
+                        <span>至</span>
+                        <select><option>35 岁</option><option selected>40 岁</option><option>45 岁</option></select>
+                      </div>
+                    </label>
+                    <div>
+                      <label><span>目标用户地域 <small class="field-limit">（多选）</small></span></label>
+                      <div class="option-group multi" aria-label="目标用户地域多选">
+                        <button class="option-chip selected" type="button" data-choice="multi">一线城市</button>
+                        <button class="option-chip selected" type="button" data-choice="multi">二线城市</button>
+                        <button class="option-chip" type="button" data-choice="multi">三线城市</button>
+                        <button class="option-chip" type="button" data-choice="multi">小城市</button>
+                      </div>
+                    </div>
+                    <label class="span-two"><span>解决用户问题 <small class="field-limit">（不超过 100 个字）</small></span><textarea maxlength="100">养猫或小型犬，重视家里整洁和宠物用品颜值，但进食区总是有水渍、粮渣和味道。</textarea></label>
+                  </div>
+
+                  <div class="form-subtitle">品牌资料</div>
+                  <div class="field-grid">
+                    <label class="span-two"><span>品牌定位 <small class="field-limit">（不超过 50 个字）</small></span><textarea maxlength="50">给养宠家庭提供更整洁、更好清理、更适合家居场景的宠物用品。</textarea></label>
+                  </div>
+                </div>
+              </section>
+              </div>
+
+              <div class="create-step-panel" data-create-panel="product" hidden>
+              <section class="panel form-panel dense">
+                <div data-account-products="brand">
+                  <div class="product-list">
+                    <div class="product-group">
+                      <div class="product-group-head">
+                        <strong>商品 1</strong>
+                        <span>上传商品信息，可用于后续内容生成</span>
+                      </div>
+                      <div class="field-grid">
+                        <label>商品名（不超过 20 个字）<input maxlength="20" value="可水洗防滑宠物餐垫" /></label>
+                        <label>商品定价
+                          <div class="range-control">
+                            <select><option selected>10 元</option><option>30 元</option><option>50 元</option></select>
+                            <span>至</span>
+                            <select><option>30 元</option><option selected>50 元</option><option>100 元</option></select>
+                          </div>
+                        </label>
+                        <div class="span-two">
+                          <label>商品图（上传 1-3 张）</label>
+                          <div class="upload-grid">
+                            <label class="upload-tile filled">主图<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 2<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 3<input type="file" accept="image/*" hidden /></label>
+                          </div>
+                        </div>
+                        <label>商品卖点（不超过 50 个字）<textarea maxlength="50">高边挡水、可冲洗、底部防滑、颜色适合家居环境。</textarea></label>
+                        <label>消费场景（不超过 100 个字）<textarea maxlength="100">养猫家庭、小型犬家庭、多宠家庭，想把宠物进食区整理得更清爽。</textarea></label>
+                        <label class="span-two">使用场景（不超过 100 个字）<textarea maxlength="100">猫狗吃饭、喝水、湿粮喂食、地面水渍和粮渣集中清理。</textarea></label>
+                      </div>
+                    </div>
+                    <div class="product-group" data-product-extra hidden>
+                      <div class="product-group-head">
+                        <strong>商品 2</strong>
+                        <span>新增商品组</span>
+                      </div>
+                      <div class="field-grid">
+                        <label>商品名（不超过 20 个字）<input maxlength="20" value="便携宠物湿巾" /></label>
+                        <label>商品定价
+                          <div class="range-control">
+                            <select><option selected>10 元</option><option>30 元</option><option>50 元</option></select>
+                            <span>至</span>
+                            <select><option selected>30 元</option><option>50 元</option><option>100 元</option></select>
+                          </div>
+                        </label>
+                        <div class="span-two">
+                          <label>商品图（上传 1-3 张）</label>
+                          <div class="upload-grid">
+                            <label class="upload-tile">添加图 1<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 2<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 3<input type="file" accept="image/*" hidden /></label>
+                          </div>
+                        </div>
+                        <label>商品卖点（不超过 50 个字）<textarea maxlength="50">随身携带、温和清洁、适合外出后擦爪和局部清理。</textarea></label>
+                        <label>消费场景（不超过 100 个字）<textarea maxlength="100">遛狗回家、猫咪弄脏局部、外出旅行时快速清洁。</textarea></label>
+                        <label class="span-two">使用场景（不超过 100 个字）<textarea maxlength="100">擦爪子、擦嘴边、清理宠物用品表面。</textarea></label>
+                      </div>
+                    </div>
+                    <button class="secondary-btn small add-product-btn" type="button" data-action="add-product">添加商品</button>
+                  </div>
+                </div>
+              </section>
+              </div>
+
+              <div class="create-step-panel" data-create-panel="ip" hidden>
+              <section class="panel form-panel dense">
+                <div data-account-section="ip" hidden>
+                  <div class="form-subtitle">个人资料</div>
+                  <div class="field-grid ip-profile-grid">
+                    <div class="span-two">
+                      <label><span>IP 方向</span></label>
+                      <div class="option-group single" aria-label="IP方向单选" data-direction-group="ip">
+                        <button class="option-chip" type="button" data-choice="single">教育</button>
+                        <button class="option-chip" type="button" data-choice="single">科技</button>
+                        <button class="option-chip" type="button" data-choice="single">知识付费</button>
+                        <button class="option-chip" type="button" data-choice="single">职场成长</button>
+                        <button class="option-chip" type="button" data-choice="single">商业/创业</button>
+                        <button class="option-chip selected" type="button" data-choice="single">AI 工具/效率</button>
+                        <button class="option-chip" type="button" data-choice="single">运营/营销</button>
+                        <button class="option-chip" type="button" data-choice="single" data-other-choice>其他</button>
+                      </div>
+                      <label class="other-direction-field" data-other-direction hidden>
+                        <span>其他方向 <small class="field-limit">不超过 10 个字</small></span>
+                        <input data-other-direction-input maxlength="10" placeholder="请输入 IP 方向" />
+                      </label>
+                    </div>
+                    <div class="span-two">
+                      <label><span>身份标签 <small class="field-limit">（多选）</small></span></label>
+                      <div class="option-group multi" aria-label="身份标签多选">
+                        <button class="option-chip selected" type="button" data-choice="multi">一人公司</button>
+                        <button class="option-chip" type="button" data-choice="multi">品牌主</button>
+                        <button class="option-chip" type="button" data-choice="multi">创业者</button>
+                        <button class="option-chip" type="button" data-choice="multi">自由职业者</button>
+                        <button class="option-chip selected" type="button" data-choice="multi">内容创作者</button>
+                        <button class="option-chip selected" type="button" data-choice="multi">运营/营销</button>
+                        <button class="option-chip" type="button" data-choice="multi">咨询顾问</button>
+                        <button class="option-chip" type="button" data-choice="multi">其他</button>
+                      </div>
+                    </div>
+                    <label class="span-two"><span>专业能力 <small class="field-optional">（选填，回车生成关键词，最多 10 个）</small></span>
+                      <div class="keyword-input">
+                        <span>市场判断</span>
+                        <span>产品文档</span>
+                        <span>运营复盘</span>
+                        <span>AI 工作流</span>
+                        <input value="" placeholder="输入后按回车" />
+                      </div>
+                    </label>
+                    <label><span>真实经历 <small class="field-optional">（选填，不超过 100 个字）</small></span><textarea maxlength="100">用 AI 辅助完成项目定位、公众号内容、小红书卡片和知识库整理。</textarea></label>
+                    <label><span>核心观点 <small class="field-optional">（选填，不超过 100 个字）</small></span><textarea maxlength="100">AI 不是替你创作，而是放大你的判断、流程和复盘能力。</textarea></label>
+                    <label class="span-two"><span>产品或服务 <small class="field-optional">（选填，不超过 100 个字）</small></span><textarea maxlength="100">后期可能提供知识库搭建、内容工作流咨询或 AI 实战陪跑。</textarea></label>
+                    <div class="span-two">
+                      <label><span>人设边界 <small class="field-optional">（选填，多选）</small></span></label>
+                      <div class="option-group multi" aria-label="人设边界多选">
+                        <button class="option-chip selected" type="button" data-choice="multi">不装专家</button>
+                        <button class="option-chip" type="button" data-choice="multi">不带货</button>
+                        <button class="option-chip selected" type="button" data-choice="multi">不夸大</button>
+                        <button class="option-chip selected" type="button" data-choice="multi">不制造焦虑</button>
+                        <button class="option-chip selected" type="button" data-choice="multi">不做绝对承诺</button>
+                        <button class="option-chip" type="button" data-choice="multi">不晒收入</button>
+                        <button class="option-chip" type="button" data-choice="multi">不蹭低俗热点</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              </div>
+
+              <div class="bottom-save create-sticky-actions">
+                <button class="secondary-btn" type="button" data-create-prev hidden>
+                  <img src="./assets/icons/arrow-left.svg" alt="" />
+                  <span>上一步</span>
+                </button>
+                <button class="secondary-btn" type="button" data-create-next>下一步</button>
+                <button class="primary-btn" data-action="create-project">保存</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="home" hidden>
+            <div class="page-head">
+              <div>
+                <h2>爪边生活</h2>
+                <p>品牌 / 宠物 · 当前状态：可生成内容</p>
+              </div>
+              <button class="primary-btn" data-go="production">进入创作</button>
+            </div>
+            <div class="hero-action">
+              <div>
+                <div class="tiny-label">下一步建议</div>
+                <h3>从内容主线生成开始跑一轮</h3>
+                <p>账号资料、定位和内容主线已完成，可以选择账号生成第一组笔记。</p>
+              </div>
+              <button class="primary-btn" data-go="production">去生成笔记</button>
+            </div>
+            <div class="card-grid four">
+              <div class="metric-card"><span>资料库完成度</span><strong>82%</strong><p>素材条件已填写</p></div>
+              <div class="metric-card"><span>账号定位</span><strong>已生成</strong><p>宠物进食区整洁</p></div>
+              <div class="metric-card"><span>内容主线</span><strong>3 条</strong><p>清洁 / 避坑 / 测评</p></div>
+              <div class="metric-card"><span>最近任务</span><strong>3 篇</strong><p>1 篇待生成图片</p></div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="knowledge" hidden>
+            <div class="page-head">
+              <div>
+                <h2>账号资料</h2>
+                <p>与添加项目时保存的账号信息保持一致，可继续编辑。</p>
+              </div>
+              <button class="primary-btn" data-action="save-knowledge">保存资料库并生成定位</button>
+            </div>
+            <div class="knowledge-layout aligned-knowledge">
+              <section class="panel form-panel dense account-parser" data-account-parser>
+                <h3>账号公开信息</h3>
+                <div class="panel-title-row compact-row">
+                  <span class="hint">账号资料与添加项目时保持一致，可重新解析或手动补录。</span>
+                  <span class="status-pill muted" data-parse-status>待解析</span>
+                </div>
+                <div class="link-parse-row">
+                  <label>小红书账号链接<input data-account-link value="https://www.xiaohongshu.com/user/profile/zaobianlife" /></label>
+                  <div class="parse-actions">
+                    <button class="primary-btn small" type="button" data-action="parse-account">解析</button>
+                  </div>
+                </div>
+                <div class="parse-loading" data-parse-loading hidden>正在解析账号公开信息...</div>
+                <div class="profile-preview compact" data-parse-success hidden>
+                  <div class="account-avatar">爪</div>
+                  <div class="profile-main">
+                    <strong>爪边生活</strong>
+                    <span>小红书号：zaobianlife</span>
+                    <p>分享养宠家庭的清洁、收纳和宠物用品使用经验，让进食区更清爽。</p>
+                  </div>
+                  <div class="profile-stats">
+                    <span>关注 <strong>128</strong></span>
+                    <span>粉丝 <strong>2,846</strong></span>
+                    <span>获赞与收藏 <strong>1.8万</strong></span>
+                  </div>
+                </div>
+                <div class="manual-account-card" data-parse-manual hidden>
+                  <div class="manual-title">
+                    <strong>未解析到账号信息</strong>
+                    <span data-parse-message>可以先手动填写公开资料，后续仍能继续保存资料库。</span>
+                  </div>
+                  <div class="field-grid small-fields">
+                    <label>昵称<input value="爪边生活" /></label>
+                    <label>小红书号<input value="zaobianlife" /></label>
+                    <label>关注数<input value="128" /></label>
+                    <label>粉丝数<input value="2846" /></label>
+                    <label>获赞与收藏<input value="1.8万" /></label>
+                    <label class="span-two">账号简介<textarea>分享养宠家庭的清洁、收纳和宠物用品使用经验，让进食区更清爽。</textarea></label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel create-type-panel">
+                <h3>账号类型</h3>
+                <div class="choice-grid">
+                  <button class="choice-card active" type="button" data-account-type="brand">
+                    <strong>品牌</strong>
+                    <span>适合有品牌、商品、门店或产品的人。</span>
+                  </button>
+                  <button class="choice-card" type="button" data-account-type="ip">
+                    <strong>个人 IP</strong>
+                    <span>适合有专业能力、经历、观点或服务的人。</span>
+                  </button>
+                </div>
+              </section>
+
+              <section class="panel form-panel dense">
+                <h3 data-third-panel-title>品牌资料</h3>
+                <div class="field-grid" data-account-section="brand">
+                  <label>品牌名<input maxlength="10" value="爪边生活" /></label>
+                  <div>
+                    <label>细分方向（单选）</label>
+                    <div class="option-group single">
+                      <button class="option-chip selected" type="button" data-choice="single">宠物</button>
+                      <button class="option-chip" type="button" data-choice="single">餐饮</button>
+                      <button class="option-chip" type="button" data-choice="single">美妆</button>
+                      <button class="option-chip" type="button" data-choice="single">母婴</button>
+                      <button class="option-chip" type="button" data-choice="single">本地生活</button>
+                      <button class="option-chip" type="button" data-choice="single">其他</button>
+                    </div>
+                  </div>
+                  <label>目标用户年龄（区间）
+                    <div class="range-control">
+                      <select><option>20 岁</option><option selected>25 岁</option><option>30 岁</option></select>
+                      <span>至</span>
+                      <select><option>35 岁</option><option selected>40 岁</option><option>45 岁</option></select>
+                    </div>
+                  </label>
+                  <div>
+                    <label>目标用户地域（多选）</label>
+                    <div class="option-group multi">
+                      <button class="option-chip selected" type="button" data-choice="multi">一线城市</button>
+                      <button class="option-chip selected" type="button" data-choice="multi">二线城市</button>
+                      <button class="option-chip" type="button" data-choice="multi">三线城市</button>
+                      <button class="option-chip" type="button" data-choice="multi">小城市</button>
+                    </div>
+                  </div>
+                  <label>解决用户问题<textarea maxlength="100">养猫或小型犬，重视家里整洁和宠物用品颜值，但进食区总是有水渍、粮渣和味道。</textarea></label>
+                  <label>品牌定位<textarea maxlength="50">给养宠家庭提供更整洁、更好清理、更适合家居场景的宠物用品。</textarea></label>
+                  <div class="span-two product-list">
+                    <div class="product-group">
+                      <div class="product-group-head">
+                        <strong>商品 1</strong>
+                        <span>一组商品资料，可用于后续内容生成</span>
+                      </div>
+                      <div class="field-grid">
+                        <label>商品名<input maxlength="20" value="可水洗防滑宠物餐垫" /></label>
+                        <label>商品定价
+                          <div class="range-control">
+                            <select><option selected>10 元</option><option>30 元</option><option>50 元</option></select>
+                            <span>至</span>
+                            <select><option>30 元</option><option selected>50 元</option><option>100 元</option></select>
+                          </div>
+                        </label>
+                        <div class="span-two">
+                          <label>商品图（上传 1-3 张）</label>
+                          <div class="upload-grid">
+                            <label class="upload-tile filled">主图<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 2<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 3<input type="file" accept="image/*" hidden /></label>
+                          </div>
+                        </div>
+                        <label>商品卖点<textarea maxlength="50">高边挡水、可冲洗、底部防滑、颜色适合家居环境。</textarea></label>
+                        <label>消费场景<textarea maxlength="100">养猫家庭、小型犬家庭、多宠家庭，想把宠物进食区整理得更清爽。</textarea></label>
+                        <label class="span-two">使用场景<textarea>猫狗吃饭、喝水、湿粮喂食、多宠家庭进食区整理。</textarea></label>
+                      </div>
+                    </div>
+                    <div class="product-group" data-product-extra hidden>
+                      <div class="product-group-head">
+                        <strong>商品 2</strong>
+                        <span>新增商品组</span>
+                      </div>
+                      <div class="field-grid">
+                        <label>商品名<input maxlength="20" value="便携宠物湿巾" /></label>
+                        <label>商品定价
+                          <div class="range-control">
+                            <select><option selected>10 元</option><option>30 元</option><option>50 元</option></select>
+                            <span>至</span>
+                            <select><option selected>30 元</option><option>50 元</option><option>100 元</option></select>
+                          </div>
+                        </label>
+                        <div class="span-two">
+                          <label>商品图（上传 1-3 张）</label>
+                          <div class="upload-grid">
+                            <label class="upload-tile">添加图 1<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 2<input type="file" accept="image/*" hidden /></label>
+                            <label class="upload-tile">添加图 3<input type="file" accept="image/*" hidden /></label>
+                          </div>
+                        </div>
+                        <label>商品卖点<textarea maxlength="50">随身携带、温和清洁、适合外出后擦爪和局部清理。</textarea></label>
+                        <label>消费场景<textarea maxlength="100">遛狗回家、猫咪弄脏局部、外出旅行时快速清洁。</textarea></label>
+                        <label class="span-two">使用场景<textarea>擦爪子、擦嘴边、清理宠物用品表面。</textarea></label>
+                      </div>
+                    </div>
+                    <button class="secondary-btn small add-product-btn" type="button" data-action="add-product">添加商品</button>
+                  </div>
+                </div>
+                <div class="field-grid" data-account-section="ip" hidden>
+                  <div class="span-two">
+                    <label>IP 方向（单选）</label>
+                    <div class="option-group single">
+                      <button class="option-chip" type="button" data-choice="single">教育</button>
+                      <button class="option-chip" type="button" data-choice="single">科技</button>
+                      <button class="option-chip" type="button" data-choice="single">知识付费</button>
+                      <button class="option-chip" type="button" data-choice="single">职场成长</button>
+                      <button class="option-chip" type="button" data-choice="single">商业/创业</button>
+                      <button class="option-chip selected" type="button" data-choice="single">AI 工具/效率</button>
+                      <button class="option-chip" type="button" data-choice="single">运营/营销</button>
+                      <button class="option-chip" type="button" data-choice="single">其他</button>
+                    </div>
+                  </div>
+                  <div class="span-two">
+                    <label>身份标签（多选）</label>
+                    <div class="option-group multi">
+                      <button class="option-chip selected" type="button" data-choice="multi">一人公司</button>
+                      <button class="option-chip" type="button" data-choice="multi">品牌主</button>
+                      <button class="option-chip" type="button" data-choice="multi">创业者</button>
+                      <button class="option-chip" type="button" data-choice="multi">自由职业者</button>
+                      <button class="option-chip selected" type="button" data-choice="multi">内容创作者</button>
+                      <button class="option-chip selected" type="button" data-choice="multi">运营/营销</button>
+                      <button class="option-chip" type="button" data-choice="multi">咨询顾问</button>
+                      <button class="option-chip" type="button" data-choice="multi">其他</button>
+                    </div>
+                  </div>
+                  <label class="span-two">专业能力
+                    <div class="keyword-input">
+                      <span>市场判断</span>
+                      <span>产品文档</span>
+                      <span>运营复盘</span>
+                      <span>AI 工作流</span>
+                      <input value="" placeholder="输入后按回车" />
+                    </div>
+                  </label>
+                  <label>真实经历<textarea>用 AI 辅助完成项目定位、公众号内容、小红书卡片和知识库整理。</textarea></label>
+                  <label>核心观点<textarea>AI 不是替你创作，而是放大你的判断、流程和复盘能力。</textarea></label>
+                  <label>产品或服务<textarea>后期可能提供知识库搭建、内容工作流咨询或 AI 实战陪跑。</textarea></label>
+                  <div class="span-two">
+                    <label>人设边界（多选）</label>
+                    <div class="option-group multi">
+                      <button class="option-chip selected" type="button" data-choice="multi">不装专家</button>
+                      <button class="option-chip" type="button" data-choice="multi">不带货</button>
+                      <button class="option-chip selected" type="button" data-choice="multi">不夸大</button>
+                      <button class="option-chip selected" type="button" data-choice="multi">不制造焦虑</button>
+                      <button class="option-chip selected" type="button" data-choice="multi">不做绝对承诺</button>
+                      <button class="option-chip" type="button" data-choice="multi">不晒收入</button>
+                      <button class="option-chip" type="button" data-choice="multi">不蹭低俗热点</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="screen" data-view="positioning" hidden>
+            <div class="page-head">
+              <div>
+                <h2>定位与内容主线</h2>
+                <p>展示并编辑账号定位和 3 条长期内容主线。</p>
+              </div>
+              <button class="primary-btn" data-go="production">去生成笔记</button>
+            </div>
+            <div class="two-col">
+              <div class="panel">
+                <h3>账号一句话定位</h3>
+                <p class="large-text">一个专注宠物进食区整洁和家居友好体验的宠物用品品牌。</p>
+                <div class="list-block">
+                  <span>目标用户：养猫、小型犬、多宠家庭</span>
+                  <span>核心卖点：少擦一次地，更清爽的进食区</span>
+                  <span>内容边界：不夸大功效，不制造焦虑</span>
+                </div>
+              </div>
+              <div class="panel">
+                <h3>3 条内容主线</h3>
+                <div class="pillar">
+                  <strong>宠物进食区清洁</strong>
+                  <p>场景痛点 + 前后对比 + 简单解决方案</p>
+                </div>
+                <div class="pillar">
+                  <strong>新手养宠家居避坑</strong>
+                  <p>避坑清单 + 使用建议 + 产品选择原则</p>
+                </div>
+                <div class="pillar">
+                  <strong>宠物用品真实测评</strong>
+                  <p>真实测试 + 适合谁 + 不适合谁</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="production" hidden>
+            <div class="production-toolbar">
+              <div class="production-account-switcher">
+                <button class="production-account-trigger" type="button" data-action="toggle-account-switcher" aria-expanded="false">
+                  <span class="production-account-avatars" data-account-avatar-stack></span>
+                  <span class="production-account-copy">
+                    <strong data-account-switcher-label>选择账号</strong>
+                    <small data-account-switcher-meta>从已保存的账号中选择</small>
+                  </span>
+                  <span class="production-account-action">切换</span>
+                </button>
+                <div class="production-account-popover" data-account-switcher-popover hidden>
+                  <div class="production-account-popover-head">
+                    <strong>切换创作账号</strong>
+                    <button class="icon-text-btn" type="button" data-go="create">
+                      <img src="./assets/icons/plus.svg" alt="" />
+                      <span>添加账号</span>
+                    </button>
+                  </div>
+                  <div class="creation-account-list" data-creation-account-list></div>
+                </div>
+              </div>
+              <div class="mode-switch" aria-label="创作方式">
+                <button class="active" type="button" data-generation-mode="pillar">主线</button>
+                <button class="coming-soon" type="button" aria-disabled="true" title="暂未开放">对话</button>
+              </div>
+              <button class="history-link" type="button" data-go="history">
+                <img src="./assets/icons/history.svg" alt="" />
+                <span>历史</span>
+              </button>
+            </div>
+            <div class="empty-state" data-state-show="productionLocked">
+              <img src="./assets/icons/sparkles.svg" alt="" />
+              <h3>先创建账号，再开始创作</h3>
+              <p>账号资料会决定内容主线和生成结果。</p>
+              <button class="primary-btn" data-go="create">创建账号</button>
+            </div>
+            <div data-state-show="productionReady">
+              <div class="creation-select-empty" data-creation-select-empty>
+                <img src="./assets/icons/users-round.svg" alt="" />
+                <h3>先选择本次要创作的账号</h3>
+                <p>选定账号后，巴布会根据定位和资料推荐内容主线。</p>
+                <button class="primary-btn" type="button" data-action="toggle-account-switcher">选择账号</button>
+              </div>
+
+              <div data-creation-account-content hidden>
+              <div class="collapsed-content-summary" data-collapsed-content hidden>
+                <button class="secondary-btn small" type="button" data-action="return-content-form">返回</button>
+                <div class="summary-item">
+                  <span data-summary-source-label>内容主线</span>
+                  <strong data-summary-pillar>宠物进食区清洁</strong>
+                </div>
+                <div class="summary-item">
+                  <span>生成参数</span>
+                  <strong data-summary-params>标准正文 500-700 字 · 3 篇</strong>
+                </div>
+              </div>
+
+              <div class="content-split" data-content-split>
+              <div class="generation-workbench" data-content-collapsible>
+                <div data-generation-panel="pillar">
+                  <div class="generation-grid">
+                    <section class="panel">
+                      <div class="panel-title-row">
+          <h3>1. 选择创作主线</h3>
+          <span class="single-choice-label">单选</span>
+        </div>
+        <div class="creation-source-switch" data-creation-source-switch>
+          <button class="creation-source-option active" type="button" data-creation-source="content">内容主线</button>
+          <button class="creation-source-option" type="button" data-creation-source="product">商品主线</button>
+        </div>
+        <div class="pillar-option-group option-group" data-creation-source-panel="content">
+                        <button class="pillar-option selected" type="button" data-choice="single">
+                          <img class="pillar-choice-icon" src="./assets/icons/circle-check.svg" alt="" />
+                          <strong>宠物进食区清洁</strong>
+                          <span>场景痛点、清理前后、简单解决方案。</span>
+                        </button>
+                        <button class="pillar-option" type="button" data-choice="single">
+                          <img class="pillar-choice-icon" src="./assets/icons/circle-check.svg" alt="" />
+                          <strong>新手养宠家居避坑</strong>
+                          <span>避坑清单、用品选择、家里更好收拾。</span>
+                        </button>
+          <button class="pillar-option" type="button" data-choice="single">
+            <img class="pillar-choice-icon" src="./assets/icons/circle-check.svg" alt="" />
+            <strong>宠物用品真实测评</strong>
+            <span>真实测试、适合谁、不适合谁。</span>
+          </button>
+        </div>
+        <div class="product-mainline-panel" data-creation-source-panel="product" hidden>
+          <div class="product-mainline-list" data-product-mainline-options></div>
+          <p class="creation-source-hint">将围绕所选商品生成笔记内容。</p>
+        </div>
+      </section>
+
+                    <section class="panel generation-command-panel">
+                      <h3>2. 生成设置</h3>
+                      <div class="control-block">
+                        <label>字数</label>
+                        <div class="option-group">
+                          <button class="option-chip" type="button" data-choice="single">精简正文 200-400 字</button>
+                          <button class="option-chip selected" type="button" data-choice="single">标准正文 500-700 字</button>
+                          <button class="option-chip" type="button" data-choice="single">长图文正文 800-1000 字</button>
+                        </div>
+                      </div>
+                      <div class="control-block">
+                        <label>生成笔记数</label>
+                        <div class="note-count-stepper" data-note-count-stepper>
+                          <button type="button" data-action="decrease-note-count" aria-label="减少生成篇数">-</button>
+                          <strong data-note-count-value>3</strong>
+                          <button type="button" data-action="increase-note-count" aria-label="增加生成篇数">
+                            <img src="./assets/icons/plus.svg" alt="" />
+                          </button>
+                          <span>篇（1-5）</span>
+                        </div>
+                        <div class="option-group note-count-group" hidden>
+                          <button class="option-chip" type="button" data-choice="single">1 篇</button>
+                          <button class="option-chip" type="button" data-choice="single">2 篇</button>
+                          <button class="option-chip selected" type="button" data-choice="single">3 篇</button>
+                          <button class="option-chip" type="button" data-choice="single">4 篇</button>
+                          <button class="option-chip" type="button" data-choice="single">5 篇</button>
+                        </div>
+                      </div>
+                      <button class="primary-btn full-width" data-action="generate-notes">生成笔记</button>
+                    </section>
+                  </div>
+
+                  <section class="production-preview-empty" data-production-preview-empty>
+                    <img src="./assets/icons/panel-left.svg" alt="" />
+                    <strong>笔记预览</strong>
+                    <span>选择内容主线和生成参数后，点击上方按钮生成笔记。</span>
+                  </section>
+
+                  <section class="panel output-panel" data-generated-preview="pillar" hidden>
+                    <div class="panel-title-row">
+                      <h3>3. 笔记预览</h3>
+                      <span class="generated-count-label" data-generated-count-label>已生成 3 篇</span>
+                    </div>
+                    <div class="note-list-head" aria-hidden="true">
+                      <span>#</span>
+                      <span>笔记标题与摘要</span>
+                      <span>话题</span>
+                    </div>
+                    <div class="note-output-grid">
+                      <article class="note-output-card" data-note-preview="1">
+                        <span>笔记 1</span>
+                        <h4>猫碗旁边总是脏</h4>
+                        <p>以前我一直以为猫碗旁边脏，是猫吃饭太急。后来才发现，粮渣、水渍和地板缝隙叠在一起，才是每天都要擦的原因...</p>
+                        <div class="topic-list">
+                          <em>#新手养猫</em>
+                          <em>#宠物用品</em>
+                          <em>#家居清洁</em>
+                        </div>
+                      </article>
+                      <article class="note-output-card" data-note-preview="2">
+                        <span>笔记 2</span>
+                        <h4>吃完饭少擦一次地</h4>
+                        <p>养宠家庭最烦的不是脏一次，而是每天都要收拾一圈。猫粮、喝水印、碗底残留，如果能集中在一个区域处理，家里会轻松很多...</p>
+                        <div class="topic-list">
+                          <em>#养宠日常</em>
+                          <em>#猫咪用品</em>
+                          <em>#生活好物</em>
+                        </div>
+                      </article>
+                      <article class="note-output-card" data-note-preview="3">
+                        <span>笔记 3</span>
+                        <h4>宠物餐垫怎么选</h4>
+                        <p>宠物餐垫不是越厚越好。对小户型来说，好冲洗、不乱滑、颜色不突兀，反而比花哨功能更重要...</p>
+                        <div class="topic-list">
+                          <em>#宠物餐垫</em>
+                          <em>#养宠避坑</em>
+                          <em>#小户型养宠</em>
+                        </div>
+                      </article>
+                      <article class="note-output-card" data-note-preview="4">
+                        <span>笔记 4</span>
+                        <h4>猫粮渣总扫不干净</h4>
+                        <p>猫粮渣最麻烦的地方，是它经常卡在碗边、地板缝和墙角。与其每天追着扫，不如先把进食区固定下来...</p>
+                        <div class="topic-list">
+                          <em>#猫咪日常</em>
+                          <em>#家居收纳</em>
+                          <em>#养宠清洁</em>
+                        </div>
+                      </article>
+                      <article class="note-output-card" data-note-preview="5">
+                        <span>笔记 5</span>
+                        <h4>小户型养宠更怕乱</h4>
+                        <p>小户型养宠，最怕的不是东西多，而是每个角落都一点点乱。宠物吃饭区如果能集中管理，家里会舒服很多...</p>
+                        <div class="topic-list">
+                          <em>#小户型养宠</em>
+                          <em>#宠物用品</em>
+                          <em>#生活清洁</em>
+                        </div>
+                      </article>
+                    </div>
+                  </section>
+                </div>
+
+                <div data-generation-panel="chat" hidden>
+                  <div class="two-col wide-left">
+                    <section class="panel chat-panel">
+                      <div class="panel-title-row">
+                        <h3>对话生成</h3>
+                      </div>
+                      <div class="chat-thread">
+                        <div class="chat-bubble assistant">你想写什么？我会结合“爪边生活”的账号定位、品牌资料和商品信息来生成。</div>
+                        <div class="chat-bubble user">帮我写一篇猫碗旁边总是脏的笔记，正文不要太硬广，标题不要超过 20 字。</div>
+                      </div>
+                      <label class="material-input">
+                        <span>输入要求</span>
+                        <textarea>围绕“猫碗旁边总是脏”，写一篇标准正文的小红书笔记。先讲真实场景，再自然带到餐垫，不要夸大效果。</textarea>
+                      </label>
+                      <button class="primary-btn" data-action="generate-notes">生成对话笔记</button>
+                    </section>
+
+                    <section class="panel output-panel" data-generated-preview="chat" hidden>
+                      <div class="panel-title-row">
+                        <h3>笔记预览</h3>
+                      </div>
+                      <article class="note-output-card single" data-note-preview="chat">
+                        <span>对话生成</span>
+                        <h4>猫碗旁边总是脏</h4>
+                        <p>养猫之后才发现，猫碗旁边最容易乱。不是猫不乖，而是吃饭时掉出来的粮、喝水溅出来的水，再加上地板缝隙，时间久了就很难清爽...</p>
+                        <div class="topic-list">
+                          <em>#养猫日常</em>
+                          <em>#宠物用品</em>
+                          <em>#家居清洁</em>
+                          <em>#新手养猫</em>
+                        </div>
+                      </article>
+                    </section>
+                  </div>
+                </div>
+              </div>
+              <aside class="inline-note-detail" data-inline-note-detail data-note-detail-shell hidden>
+                <div class="inline-detail-head">
+                  <div>
+                    <span class="tiny-label">笔记详情</span>
+                    <h3 data-detail-heading>猫碗旁边总是脏</h3>
+                  </div>
+                </div>
+                <div class="inline-detail-scroll">
+                  <section class="detail-section note-result-section">
+                    <h4>笔记正文</h4>
+                    <div class="readonly-field">
+                      <span class="readonly-field-label">标题</span>
+                      <strong class="readonly-title" data-detail-title>猫碗旁边总是脏</strong>
+                    </div>
+                    <div class="readonly-field">
+                      <span class="readonly-field-label">正文</span>
+                      <p class="readonly-body" data-detail-body>以前我一直以为猫碗旁边脏，是猫吃饭太急。后来发现，真正麻烦的是食物碎屑、喝水带出来的水渍和地面缝隙一起叠加。家里如果是木地板，时间久了还会有味道。现在我会把猫碗、水碗固定在一张高边餐垫上，吃完直接冲洗晾干，进食区会清爽很多。适合每天都在擦地的养猫家庭。</p>
+                    </div>
+                    <div class="readonly-field">
+                      <span class="readonly-field-label">推荐话题</span>
+                      <div class="readonly-topics" data-detail-topics>
+                        <span>#养猫好物</span>
+                        <span>#宠物用品</span>
+                        <span>#新手养猫</span>
+                        <span>#猫咪日常</span>
+                        <span>#家居清洁</span>
+                      </div>
+                    </div>
+                  </section>
+                  <section class="detail-section image-generation-section">
+                    <div class="panel-title-row">
+                      <h4>生成图片</h4>
+                    </div>
+                    <div class="image-generation-controls">
+                      <label class="image-count-field">
+                        <span>图片数量</span>
+                        <select data-detail-image-count aria-label="图片数量">
+                          <option value="1">1 张</option>
+                          <option value="2">2 张</option>
+                          <option value="3" selected>3 张</option>
+                          <option value="4">4 张</option>
+                          <option value="5">5 张</option>
+                          <option value="6">6 张</option>
+                        </select>
+                      </label>
+                      <button class="primary-btn generate-detail-images-btn" type="button" data-action="generate-detail-images">生成配图</button>
+                    </div>
+                    <div class="image-generation-state" data-detail-image-empty>
+                      <img src="./assets/icons/image.svg" alt="" />
+                      <strong>尚未生成配图</strong>
+                    </div>
+                    <div class="image-generation-state is-loading" data-detail-image-loading hidden aria-live="polite">
+                      <img src="./assets/icons/image.svg" alt="" />
+                      <strong>正在生成配图...</strong>
+                    </div>
+                    <div class="generated-image-grid" data-detail-image-grid hidden></div>
+                  </section>
+                </div>
+              </aside>
+              </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="history" hidden>
+            <div class="page-head">
+              <div>
+                <h2>创作历史</h2>
+              </div>
+            </div>
+            <div class="empty-state" data-state-show="noRecords">
+              <div class="wire-image"></div>
+              <h3>暂无历史笔记</h3>
+              <button class="primary-btn" data-go="production">返回创作</button>
+            </div>
+            <div data-state-show="hasRecords">
+              <div class="history-account-summary">
+                <h2 data-history-account-title>爪边生活的历史笔记</h2>
+                <span data-history-note-count>共 3 篇</span>
+              </div>
+              <div class="history-note-list-head" aria-hidden="true">
+                <span>封面</span>
+                <span>标题与摘要</span>
+                <span>话题</span>
+                <span>生成时间</span>
+                <span></span>
+              </div>
+              <div class="history-note-list" data-history-note-list></div>
+              <div class="history-notes-empty" data-history-notes-empty hidden>
+                <img src="./assets/icons/history.svg" alt="" />
+                <strong>该账号暂无历史笔记</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-view="note" hidden>
+            <div class="history-note-detail" data-history-note-detail data-note-detail-shell>
+              <div class="history-note-detail-head">
+                <span>笔记详情</span>
+                <h2 data-history-detail-heading>猫碗旁边总是脏</h2>
+              </div>
+              <div class="history-note-detail-grid">
+                <section class="detail-section note-result-section">
+                  <h3>笔记正文</h3>
+                  <div class="readonly-field">
+                    <span class="readonly-field-label">标题</span>
+                    <strong class="readonly-title" data-history-detail-title>猫碗旁边总是脏</strong>
+                  </div>
+                  <div class="readonly-field">
+                    <span class="readonly-field-label">正文</span>
+                    <p class="readonly-body" data-history-detail-body></p>
+                  </div>
+                  <div class="readonly-field">
+                    <span class="readonly-field-label">推荐话题</span>
+                    <div class="readonly-topics" data-history-detail-topics></div>
+                  </div>
+                </section>
+                <section class="detail-section image-generation-section">
+                  <div class="panel-title-row">
+                    <h3>生成图片</h3>
+                  </div>
+                  <div class="image-generation-controls">
+                    <label class="image-count-field">
+                      <span>图片数量</span>
+                      <select data-detail-image-count aria-label="图片数量">
+                        <option value="1">1 张</option>
+                        <option value="2">2 张</option>
+                        <option value="3" selected>3 张</option>
+                        <option value="4">4 张</option>
+                        <option value="5">5 张</option>
+                        <option value="6">6 张</option>
+                      </select>
+                    </label>
+                    <button class="primary-btn generate-detail-images-btn" type="button" data-action="generate-detail-images">生成配图</button>
+                  </div>
+                  <div class="image-generation-state" data-detail-image-empty>
+                    <img src="./assets/icons/image.svg" alt="" />
+                    <strong>尚未生成配图</strong>
+                  </div>
+                  <div class="image-generation-state is-loading" data-detail-image-loading hidden aria-live="polite">
+                    <img src="./assets/icons/image.svg" alt="" />
+                    <strong>正在生成配图...</strong>
+                  </div>
+                  <div class="generated-image-grid" data-detail-image-grid hidden></div>
+                </section>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" data-login-modal hidden>
+      <div class="login-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <div class="modal-head">
+          <div>
+            <h2 id="loginModalTitle">进入巴布工作台</h2>
+          </div>
+          <button class="icon-close" type="button" aria-label="关闭登录弹窗" data-action="close-login-modal">×</button>
+        </div>
+        <div class="login-panel modal-login-panel">
+          <label>账号<input value="demo@babu.ai" /></label>
+          <label>密码<input type="password" value="babu1234" /></label>
+          <button class="primary-btn" data-login-scenario="first">登录</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./script.js?v=20260807-chat-v38"></script>
+</body>
+</html>
