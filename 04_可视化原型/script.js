@@ -9,6 +9,7 @@ const screenTitles = {
   production: "创作",
   history: "创作历史",
   note: "笔记详情",
+  profile: "个人中心",
 };
 
 const mainMenuByScreen = {
@@ -22,6 +23,7 @@ const mainMenuByScreen = {
   production: "production",
   history: "production",
   note: "production",
+  profile: "profile",
 };
 
 let currentScreen = "login";
@@ -356,6 +358,7 @@ function setLoggedIn(value) {
 const titleEl = document.getElementById("screenTitle");
 const backBtn = document.querySelector("[data-action='go-back']");
 const loginModal = document.querySelector("[data-login-modal]");
+const profileLogoutConfirm = document.querySelector("[data-profile-logout-confirm]");
 
 const demoAccounts = {
   brand: {
@@ -698,6 +701,18 @@ function logout() {
   goHome();
 }
 
+function openProfileLogoutConfirm() {
+  if (!profileLogoutConfirm) return;
+  profileLogoutConfirm.hidden = false;
+  profileLogoutConfirm.querySelector("[data-action='cancel-logout']")?.focus();
+}
+
+function closeProfileLogoutConfirm() {
+  if (!profileLogoutConfirm) return;
+  profileLogoutConfirm.hidden = true;
+  document.querySelector("[data-action='open-logout-confirm']")?.focus();
+}
+
 function routeAfterLogin() {
   syncProjectState();
   selectedAccountId = null;
@@ -903,6 +918,7 @@ function renderContextSidebar() {
   const inlineCreateButton = document.querySelector("[data-context-add-inline]");
   const generationSettings = document.querySelector("[data-context-generation-settings]");
   const sectionTitle = document.querySelector("[data-context-section-title]");
+  const sectionHead = sectionTitle?.closest(".context-section-head");
   const list = document.querySelector("[data-context-account-list]");
   const empty = document.querySelector("[data-context-empty]");
   if (!title || !createButton || !sectionTitle || !list || !empty) return;
@@ -913,7 +929,8 @@ function renderContextSidebar() {
 
   if (chatMode) {
     title.textContent = "对话";
-    sectionTitle.textContent = "历史对话";
+    sectionTitle.textContent = "";
+    if (sectionHead) sectionHead.hidden = true;
     if (search) search.hidden = false;
     if (searchInput) {
       if (searchInput.dataset.mode !== "chat") searchInput.value = "";
@@ -958,6 +975,7 @@ function renderContextSidebar() {
     return;
   }
 
+  if (sectionHead) sectionHead.hidden = false;
   if (searchInput) {
     if (searchInput.dataset.mode !== "account") searchInput.value = "";
     searchInput.dataset.mode = "account";
@@ -1044,17 +1062,55 @@ function resizeChatInput() {
   input.style.height = `${Math.min(input.scrollHeight, 150)}px`;
 }
 
+function renderProfileScreen() {
+  const loginAccount = document.querySelector("[data-login-account]")?.value.trim() || "demo@babu.ai";
+  document.querySelectorAll("[data-profile-account]").forEach((el) => {
+    el.textContent = loginAccount;
+  });
+}
+
+function updateProfilePassword() {
+  const currentPassword = document.querySelector("[data-profile-current-password]");
+  const newPassword = document.querySelector("[data-profile-new-password]");
+  const confirmPassword = document.querySelector("[data-profile-confirm-password]");
+  const feedback = document.querySelector("[data-profile-password-feedback]");
+  if (!currentPassword || !newPassword || !confirmPassword || !feedback) return;
+
+  const setFeedback = (message, success = false) => {
+    feedback.textContent = message;
+    feedback.hidden = false;
+    feedback.classList.toggle("success", success);
+  };
+
+  if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+    setFeedback("请填写完整密码");
+    return;
+  }
+  if (newPassword.value.length < 6) {
+    setFeedback("新密码至少需要 6 位");
+    return;
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    setFeedback("两次输入的新密码不一致");
+    return;
+  }
+
+  currentPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+  setFeedback("密码已更新", true);
+  showToast("密码已更新");
+}
+
 function renderChatScreen(options = {}) {
   const title = document.querySelector("[data-chat-title]");
-  const updated = document.querySelector("[data-chat-updated]");
   const messages = document.querySelector("[data-chat-messages]");
   const thread = document.querySelector("[data-chat-thread]");
-  if (!title || !updated || !messages || !thread) return;
+  if (!title || !messages || !thread) return;
 
   const conversation = getSelectedConversation();
   if (!conversation) return;
   title.textContent = conversation.title;
-  updated.textContent = conversation.updated;
 
   if (conversation.messages.length === 0) {
     messages.innerHTML = `
@@ -1557,7 +1613,7 @@ function navigate(screen, options = {}) {
   document.querySelector(`.screen[data-view="${screen}"]`)?.scrollTo({ left: 0, top: 0, behavior: "auto" });
 
   const activeMainMenu = mainMenuByScreen[screen];
-  document.querySelectorAll(".nav-item, .workspace-nav-item").forEach((el) => {
+  document.querySelectorAll(".nav-item, .workspace-nav-item, .workspace-profile-trigger").forEach((el) => {
     el.classList.toggle("active", el.dataset.screen === activeMainMenu);
   });
 
@@ -1660,6 +1716,7 @@ function renderState() {
   renderHistoryNotes();
   if (currentScreen === "chat") renderChatScreen({ scrollToEnd: true });
   if (currentScreen === "note") renderHistoryNoteDetail();
+  if (currentScreen === "profile") renderProfileScreen();
   renderAuthState();
   renderWorkbenchGuide();
   const flags = getStateFlags();
@@ -2189,6 +2246,11 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (profileLogoutConfirm && event.target === profileLogoutConfirm) {
+    closeProfileLogoutConfirm();
+    return;
+  }
+
   if (event.target.closest("[data-home-preview]")) return;
 
   if (!event.target.closest(".production-account-switcher")) {
@@ -2384,6 +2446,23 @@ document.addEventListener("click", (event) => {
     }
     if (action === "logout") {
       logout();
+      return;
+    }
+    if (action === "open-logout-confirm") {
+      openProfileLogoutConfirm();
+      return;
+    }
+    if (action === "cancel-logout") {
+      closeProfileLogoutConfirm();
+      return;
+    }
+    if (action === "confirm-logout") {
+      if (profileLogoutConfirm) profileLogoutConfirm.hidden = true;
+      logout();
+      return;
+    }
+    if (action === "update-profile-password") {
+      updateProfilePassword();
       return;
     }
     if (action === "close-login-modal") {
