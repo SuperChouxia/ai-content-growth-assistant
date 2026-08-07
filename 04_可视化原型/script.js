@@ -60,6 +60,29 @@ let selectedConversationId = "chat-1";
 let conversationIdSeed = 4;
 let chatReplyingConversationId = null;
 let chatReplyTimer = null;
+let currentProfileTab = "account";
+let textQualityMode = "standard";
+let qualityConsentGranted = false;
+let pendingQualitySelection = null;
+let generationProgressTimers = [];
+let generationInProgress = false;
+let paymentIntent = null;
+let paymentChannel = "wechat";
+let paymentCountdownTimer = null;
+let paymentAutoTimer = null;
+let paymentSecondsRemaining = 300;
+let memberState = {
+  active: true,
+  plan: "年度会员",
+  expiresAt: "2027 年 8 月 7 日",
+  credits: 1000,
+};
+let creditLedger = [
+  { time: "2026-08-07 09:00", description: "年度会员每月积分", type: "发放", amount: 1000 },
+  { time: "2026-08-06 15:36", description: "生成 3 篇标准笔记", type: "消费", amount: -9 },
+  { time: "2026-08-06 15:28", description: "图片生成失败返还", type: "返还", amount: 18 },
+  { time: "2026-08-05 20:14", description: "生成 3 张标准配图", type: "消费", amount: -30 },
+];
 const loginSessionKey = "babu-prototype-logged-in";
 let isLoggedIn = readLoginSession();
 let toastTimer = null;
@@ -235,7 +258,7 @@ let chatConversations = [
 
 function getPrototypeSessionKey() {
   const demoMode = new URLSearchParams(window.location.search).get("demo") || "default";
-  return `babu-prototype-session-v1:${demoMode}`;
+  return `babu-prototype-session-v6:${demoMode}`;
 }
 
 function getPersistentFieldKey(field, index) {
@@ -296,6 +319,11 @@ function persistPrototypeSession() {
       selectedConversationId,
       conversationIdSeed,
       chatConversations,
+      currentProfileTab,
+      textQualityMode,
+      qualityConsentGranted,
+      memberState,
+      creditLedger,
       formValues: captureFormValues(),
     }));
   } catch {
@@ -323,6 +351,17 @@ function applyPrototypeSession(session) {
   conversationIdSeed = Number(session.conversationIdSeed) || conversationIdSeed;
   if (Array.isArray(session.chatConversations) && session.chatConversations.length) {
     chatConversations = session.chatConversations;
+  }
+  currentProfileTab = ["account", "membership", "ledger"].includes(session.currentProfileTab)
+    ? session.currentProfileTab
+    : currentProfileTab;
+  textQualityMode = ["standard", "quality"].includes(session.textQualityMode)
+    ? session.textQualityMode
+    : textQualityMode;
+  qualityConsentGranted = Boolean(session.qualityConsentGranted);
+  memberState = { ...memberState, ...(session.memberState || {}) };
+  if (Array.isArray(session.creditLedger) && session.creditLedger.length) {
+    creditLedger = session.creditLedger;
   }
   restoredFormValues = Array.isArray(session.formValues) ? session.formValues : [];
   return true;
@@ -1067,6 +1106,99 @@ function renderProfileScreen() {
   document.querySelectorAll("[data-profile-account]").forEach((el) => {
     el.textContent = loginAccount;
   });
+
+  document.querySelectorAll("[data-profile-tab]").forEach((button) => {
+    const active = button.dataset.profileTab === currentProfileTab;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll("[data-profile-panel]").forEach((panel) => {
+    panel.hidden = panel.dataset.profilePanel !== currentProfileTab;
+  });
+
+  const status = document.querySelector("[data-membership-status]");
+  const title = document.querySelector("[data-membership-title]");
+  const description = document.querySelector("[data-membership-description]");
+  if (status) status.textContent = memberState.active ? memberState.plan : "会员已到期";
+  if (title) title.textContent = memberState.active
+    ? `会员有效期至 ${memberState.expiresAt}`
+    : "续费后恢复创作和积分购买";
+  if (description) {
+    description.innerHTML = memberState.active
+      ? `每月 1 日发放 1000 积分，本月剩余 <strong data-membership-balance>${memberState.credits}</strong> 积分。`
+      : `当前仍有 <strong data-membership-balance>${memberState.credits}</strong> 积分，续费后可继续使用。`;
+  }
+
+  document.querySelectorAll("[data-product-type='points']").forEach((button) => {
+    button.disabled = !memberState.active;
+  });
+  const pointNote = document.querySelector("[data-point-purchase-note]");
+  if (pointNote) {
+    pointNote.textContent = memberState.active
+      ? "仅会员可购买，购买积分有效期 12 个月。"
+      : "会员已到期，续费后可购买积分。";
+  }
+
+  renderCreditBalance();
+  renderCreditLedger();
+}
+
+function switchProfileTab(tab) {
+  currentProfileTab = ["account", "membership", "ledger"].includes(tab) ? tab : "account";
+  renderProfileScreen();
+  document.querySelector(".workspace-credit[data-screen='profile']")?.classList.toggle("active", currentProfileTab !== "account");
+  document.querySelector(".workspace-profile-trigger[data-screen='profile']")?.classList.toggle("active", currentProfileTab === "account");
+  document.querySelector(".screen[data-view='profile']")?.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openProfileMembership() {
+  currentProfileTab = "membership";
+  if (currentScreen === "profile") {
+    renderProfileScreen();
+  } else {
+    navigate("profile");
+  }
+}
+
+function formatLedgerTime(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function addCreditLedgerEntry(description, type, amount) {
+  creditLedger.unshift({
+    time: formatLedgerTime(),
+    description,
+    type,
+    amount,
+  });
+  creditLedger = creditLedger.slice(0, 30);
+  renderCreditLedger();
+}
+
+function renderCreditLedger() {
+  const container = document.querySelector("[data-credit-ledger]");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="credit-ledger-head" aria-hidden="true"><span>时间</span><span>说明</span><span>类型</span><span>积分</span></div>
+    ${creditLedger.map((entry) => `
+      <div class="credit-ledger-row">
+        <time>${escapeHtml(entry.time)}</time>
+        <strong>${escapeHtml(entry.description)}</strong>
+        <span>${escapeHtml(entry.type)}</span>
+        <b class="${entry.amount > 0 ? "credit-increase" : ""}">${entry.amount > 0 ? "+" : ""}${entry.amount}</b>
+      </div>
+    `).join("")}
+  `;
+}
+
+function renderCreditBalance() {
+  document.querySelectorAll("[data-credit-balance], [data-profile-credit-balance], [data-ledger-credit-balance], [data-generation-credit-balance]").forEach((el) => {
+    el.textContent = String(memberState.credits);
+  });
+  const membershipBalance = document.querySelector("[data-membership-balance]");
+  if (membershipBalance) membershipBalance.textContent = String(memberState.credits);
 }
 
 function updateProfilePassword() {
@@ -1371,6 +1503,7 @@ function renderCreationAccountSelector() {
 
 function attachProductionSettings() {
   updateNoteCountDisplay();
+  updateGenerationEconomics();
 }
 
 function setAccountSwitcherOpen(shouldOpen) {
@@ -1401,6 +1534,67 @@ function adjustNoteCount(delta) {
   const nextIndex = Math.max(0, Math.min(buttons.length - 1, currentIndex + delta));
   buttons.forEach((button, index) => button.classList.toggle("selected", index === nextIndex));
   updateNoteCountDisplay();
+  updateGenerationEconomics();
+  resetProductionPreview();
+}
+
+function getTextCreditEstimate() {
+  const unitCost = textQualityMode === "quality" ? 6 : 3;
+  return getSelectedNoteCount() * unitCost;
+}
+
+function getGenerationBlockReason(estimate = getTextCreditEstimate()) {
+  if (!memberState.active) {
+    return {
+      title: "会员已到期",
+      copy: "续费后可继续使用现有积分生成内容。",
+    };
+  }
+  if (memberState.credits < estimate) {
+    return {
+      title: "积分不足",
+      copy: `本次需要 ${estimate} 积分，当前剩余 ${memberState.credits} 积分。`,
+    };
+  }
+  return null;
+}
+
+function updateGenerationEconomics() {
+  const estimate = getTextCreditEstimate();
+  const blocked = getGenerationBlockReason(estimate);
+  const estimateEl = document.querySelector("[data-note-credit-estimate]");
+  const blockedEl = document.querySelector("[data-generation-blocked]");
+  const generateButton = document.querySelector(".generation-command-panel [data-action='generate-notes']");
+  if (estimateEl) estimateEl.textContent = String(estimate);
+  renderCreditBalance();
+
+  document.querySelectorAll("[data-text-quality]").forEach((button) => {
+    const active = button.dataset.textQuality === textQualityMode;
+    button.classList.toggle("selected", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+
+  if (blockedEl) {
+    blockedEl.hidden = !blocked;
+    if (blocked) {
+      const title = blockedEl.querySelector("[data-generation-blocked-title]");
+      const copy = blockedEl.querySelector("[data-generation-blocked-copy]");
+      if (title) title.textContent = blocked.title;
+      if (copy) copy.textContent = blocked.copy;
+    }
+  }
+  if (generateButton) generateButton.disabled = generationInProgress || Boolean(blocked);
+}
+
+function selectTextQuality(mode, options = {}) {
+  if (!["standard", "quality"].includes(mode)) return;
+  if (mode === "quality" && !qualityConsentGranted && !options.skipConsent) {
+    pendingQualitySelection = { type: "text", mode };
+    openQualityConsent();
+    return;
+  }
+  textQualityMode = mode;
+  updateGenerationEconomics();
   resetProductionPreview();
 }
 
@@ -1472,6 +1666,7 @@ function renderProductionPillars(account) {
 }
 
 function resetProductionPreview() {
+  clearGenerationProgress();
   document.querySelectorAll("[data-generated-preview]").forEach((preview) => {
     preview.hidden = true;
   });
@@ -1616,6 +1811,14 @@ function navigate(screen, options = {}) {
   document.querySelectorAll(".nav-item, .workspace-nav-item, .workspace-profile-trigger").forEach((el) => {
     el.classList.toggle("active", el.dataset.screen === activeMainMenu);
   });
+  const creditButton = document.querySelector(".workspace-credit[data-screen='profile']");
+  const profileButton = document.querySelector(".workspace-profile-trigger[data-screen='profile']");
+  if (screen === "profile") {
+    creditButton?.classList.toggle("active", currentProfileTab !== "account");
+    profileButton?.classList.toggle("active", currentProfileTab === "account");
+  } else {
+    creditButton?.classList.remove("active");
+  }
 
   titleEl.textContent = screenTitles[screen] || "巴布";
   document.querySelectorAll("[data-action='cancel-create']").forEach((button) => {
@@ -1650,6 +1853,7 @@ function navigate(screen, options = {}) {
   if (screen === "knowledge") {
     renderAccountType();
   }
+  if (screen === "production") updateGenerationEconomics();
   updateBackButton();
   window.scrollTo({ left: 0, top: 0, behavior: "smooth" });
 }
@@ -1717,6 +1921,7 @@ function renderState() {
   if (currentScreen === "chat") renderChatScreen({ scrollToEnd: true });
   if (currentScreen === "note") renderHistoryNoteDetail();
   if (currentScreen === "profile") renderProfileScreen();
+  renderCreditBalance();
   renderAuthState();
   renderWorkbenchGuide();
   const flags = getStateFlags();
@@ -2030,11 +2235,46 @@ function saveKnowledge() {
   navigate("projects");
 }
 
-function generateNotes() {
-  if (!prototypeState.knowledge) {
-    navigate("production");
-    return;
-  }
+function clearGenerationProgress() {
+  generationProgressTimers.forEach((timer) => window.clearTimeout(timer));
+  generationProgressTimers = [];
+  generationInProgress = false;
+  document.querySelector(".generation-grid")?.classList.remove("is-generating");
+  const progress = document.querySelector("[data-generation-progress]");
+  const error = document.querySelector("[data-generation-error]");
+  if (progress) progress.hidden = true;
+  if (error) error.hidden = true;
+  updateGenerationEconomics();
+}
+
+function setGenerationStage(stage) {
+  const stageOrder = ["search", "generate", "check"];
+  const stageIndex = Math.max(0, stageOrder.indexOf(stage));
+  const titles = {
+    search: "搜索相关资料",
+    generate: "生成笔记内容",
+    check: "执行质量检查",
+  };
+  const messages = {
+    search: "正在结合账号定位、商品资料和当前主线搜索相关信息。",
+    generate: "正在组装账号上下文并生成符合小红书表达的笔记。",
+    check: "正在检查账号匹配、事实风险、广告感和平台表达。",
+  };
+  const progressValues = [22, 62, 88];
+  document.querySelectorAll("[data-generation-stage]").forEach((item) => {
+    const index = stageOrder.indexOf(item.dataset.generationStage);
+    item.classList.toggle("active", index === stageIndex);
+    item.classList.toggle("done", index < stageIndex);
+  });
+  const title = document.querySelector("[data-generation-progress-title]");
+  const message = document.querySelector("[data-generation-progress-message]");
+  const bar = document.querySelector("[data-generation-progress-bar]");
+  if (title) title.textContent = titles[stage];
+  if (message) message.textContent = messages[stage];
+  if (bar) bar.style.width = `${progressValues[stageIndex]}%`;
+}
+
+function commitGeneratedNotes() {
   prototypeState.records = true;
   const activeMode = document.querySelector("[data-generation-mode].active")?.dataset.generationMode || "pillar";
   const preview = document.querySelector(`[data-generated-preview="${activeMode}"]`);
@@ -2060,6 +2300,82 @@ function generateNotes() {
   if (empty) empty.hidden = true;
   closeInlineNoteDetail();
   document.querySelector(".screen[data-view='production']")?.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+}
+
+function failNoteGeneration(estimate) {
+  generationProgressTimers = [];
+  generationInProgress = false;
+  document.querySelector(".generation-grid")?.classList.remove("is-generating");
+  memberState.credits += estimate;
+  addCreditLedgerEntry("笔记生成失败，冻结积分返还", "返还", estimate);
+  renderCreditBalance();
+  const progress = document.querySelector("[data-generation-progress]");
+  const error = document.querySelector("[data-generation-error]");
+  if (progress) progress.hidden = true;
+  if (error) {
+    error.hidden = false;
+    const copy = error.querySelector("[data-generation-error-copy]");
+    if (copy) copy.textContent = `本次未扣积分，冻结的 ${estimate} 积分已返还。`;
+  }
+  updateGenerationEconomics();
+}
+
+function finishNoteGeneration(estimate) {
+  generationProgressTimers = [];
+  generationInProgress = false;
+  document.querySelector(".generation-grid")?.classList.remove("is-generating");
+  const progress = document.querySelector("[data-generation-progress]");
+  if (progress) progress.hidden = true;
+  addCreditLedgerEntry(
+    `生成 ${getSelectedNoteCount()} 篇${textQualityMode === "quality" ? "高质量" : "标准"}笔记`,
+    "消费",
+    -estimate,
+  );
+  commitGeneratedNotes();
+  renderCreditBalance();
+  updateGenerationEconomics();
+  showToast(`已生成，消耗 ${estimate} 积分`);
+}
+
+function generateNotes() {
+  if (!prototypeState.knowledge) {
+    navigate("production");
+    return;
+  }
+  if (generationInProgress) return;
+
+  const estimate = getTextCreditEstimate();
+  const blocked = getGenerationBlockReason(estimate);
+  if (blocked) {
+    updateGenerationEconomics();
+    showToast(blocked.title);
+    return;
+  }
+
+  clearGenerationProgress();
+  generationInProgress = true;
+  document.querySelector(".generation-grid")?.classList.add("is-generating");
+  memberState.credits -= estimate;
+  renderCreditBalance();
+  updateGenerationEconomics();
+
+  const progress = document.querySelector("[data-generation-progress]");
+  const empty = document.querySelector("[data-production-preview-empty]");
+  const cost = document.querySelector("[data-generation-progress-cost]");
+  if (progress) progress.hidden = false;
+  if (empty) empty.hidden = true;
+  if (cost) cost.textContent = `冻结 ${estimate} 积分`;
+  setGenerationStage("search");
+
+  generationProgressTimers = [
+    window.setTimeout(() => setGenerationStage("generate"), 650),
+    window.setTimeout(() => setGenerationStage("check"), 1450),
+    window.setTimeout(() => {
+      const demoMode = new URLSearchParams(window.location.search).get("demo");
+      if (demoMode === "generation-fail") failNoteGeneration(estimate);
+      else finishNoteGeneration(estimate);
+    }, 2350),
+  ];
 }
 
 function getSelectedNoteCount() {
@@ -2103,7 +2419,7 @@ function getSelectedGenerationSummary() {
   return {
     pillar,
     sourceLabel: isProductSource ? "商品主线" : "内容主线",
-    params: `${wordCount} · ${noteCount}`,
+    params: `${textQualityMode === "quality" ? "高质量" : "标准"}模式 · ${wordCount} · ${noteCount}`,
   };
 }
 
@@ -2131,28 +2447,120 @@ function renderDetailTopics(container, topics) {
   }));
 }
 
+function openQualityConsent() {
+  const modal = document.querySelector("[data-quality-consent-modal]");
+  if (modal) modal.hidden = false;
+}
+
+function closeQualityConsent() {
+  const modal = document.querySelector("[data-quality-consent-modal]");
+  if (modal) modal.hidden = true;
+}
+
+function confirmQualityConsent() {
+  qualityConsentGranted = true;
+  const selection = pendingQualitySelection;
+  pendingQualitySelection = null;
+  closeQualityConsent();
+  if (!selection) return;
+  if (selection.type === "text") {
+    selectTextQuality(selection.mode, { skipConsent: true });
+  } else if (selection.type === "image" && selection.detail?.isConnected) {
+    selectDetailImageOption(selection.detail, "quality", selection.mode, { skipConsent: true });
+  }
+  showToast("已开启高质量模式");
+}
+
+function getDetailImageCreditEstimate(detail) {
+  const count = Math.min(6, Math.max(1, Number(detail?.querySelector("[data-detail-image-count]")?.value) || 3));
+  const imageType = detail?.dataset.imageType || "content";
+  const imageQuality = detail?.dataset.imageQuality || "standard";
+  const unitCost = imageType === "product"
+    ? (imageQuality === "quality" ? 40 : 20)
+    : (imageQuality === "quality" ? 20 : 10);
+  return count * unitCost;
+}
+
+function updateDetailImageEconomics(detail) {
+  if (!detail) return;
+  const estimate = getDetailImageCreditEstimate(detail);
+  const estimateEl = detail.querySelector("[data-image-credit-estimate]");
+  const generateButton = detail.querySelector("[data-action='generate-detail-images']");
+  if (estimateEl) estimateEl.textContent = String(estimate);
+  detail.querySelectorAll("[data-image-type]").forEach((button) => {
+    button.classList.toggle("selected", button.dataset.imageType === (detail.dataset.imageType || "content"));
+  });
+  detail.querySelectorAll("[data-image-quality]").forEach((button) => {
+    button.classList.toggle("selected", button.dataset.imageQuality === (detail.dataset.imageQuality || "standard"));
+  });
+  if (generateButton && !detail.dataset.imageGenerating) {
+    generateButton.disabled = false;
+    generateButton.title = !memberState.active
+      ? "会员已到期"
+      : memberState.credits < estimate ? "积分不足" : "";
+  }
+}
+
+function selectDetailImageOption(detail, type, mode, options = {}) {
+  if (!detail) return;
+  if (type === "quality" && mode === "quality" && !qualityConsentGranted && !options.skipConsent) {
+    pendingQualitySelection = { type: "image", mode, detail };
+    openQualityConsent();
+    return;
+  }
+  if (type === "type") detail.dataset.imageType = mode;
+  if (type === "quality") detail.dataset.imageQuality = mode;
+  updateDetailImageEconomics(detail);
+  resetDetailImageOutput(detail);
+}
+
+function resetDetailImageOutput(detail) {
+  if (!detail) return;
+  const button = detail.querySelector("[data-action='generate-detail-images']");
+  const empty = detail.querySelector("[data-detail-image-empty]");
+  const loading = detail.querySelector("[data-detail-image-loading]");
+  const grid = detail.querySelector("[data-detail-image-grid]");
+  const downloadButton = detail.querySelector("[data-action='download-detail-images']");
+  if (button) button.textContent = "生成配图";
+  if (empty) {
+    empty.hidden = false;
+    const label = empty.querySelector("strong");
+    if (label) label.textContent = "尚未生成配图";
+  }
+  if (loading) loading.hidden = true;
+  if (grid) {
+    grid.hidden = true;
+    grid.replaceChildren();
+  }
+  if (downloadButton) downloadButton.disabled = true;
+}
+
 function resetDetailImageGeneration(detail) {
   if (!detail) return;
   window.clearTimeout(detailImageGenerationTimer);
   detailImageGenerationTimer = null;
 
+  const heldCost = Number(detail.dataset.imageHold || 0);
+  if (heldCost > 0) {
+    memberState.credits += heldCost;
+    addCreditLedgerEntry("取消图片生成，冻结积分返还", "返还", heldCost);
+  }
+  delete detail.dataset.imageHold;
+  delete detail.dataset.imageGenerating;
+  detail.dataset.imageType = "content";
+  detail.dataset.imageQuality = "standard";
+
   const button = detail.querySelector("[data-action='generate-detail-images']");
   const count = detail.querySelector("[data-detail-image-count]");
-  const empty = detail.querySelector("[data-detail-image-empty]");
-  const loading = detail.querySelector("[data-detail-image-loading]");
-  const grid = detail.querySelector("[data-detail-image-grid]");
 
   if (button) {
     button.disabled = false;
     button.textContent = "生成配图";
   }
   if (count) count.value = "3";
-  if (empty) empty.hidden = false;
-  if (loading) loading.hidden = true;
-  if (grid) {
-    grid.hidden = true;
-    grid.replaceChildren();
-  }
+  resetDetailImageOutput(detail);
+  updateDetailImageEconomics(detail);
+  renderCreditBalance();
 }
 
 function generateDetailImages(button) {
@@ -2160,20 +2568,52 @@ function generateDetailImages(button) {
   if (!detail) return;
 
   const count = Math.min(6, Math.max(1, Number(detail.querySelector("[data-detail-image-count]")?.value) || 3));
+  const estimate = getDetailImageCreditEstimate(detail);
+  if (!memberState.active || memberState.credits < estimate) {
+    showToast(!memberState.active ? "会员已到期" : "积分不足");
+    openProfileMembership();
+    return;
+  }
   const empty = detail.querySelector("[data-detail-image-empty]");
   const loading = detail.querySelector("[data-detail-image-loading]");
   const grid = detail.querySelector("[data-detail-image-grid]");
+  const downloadButton = detail.querySelector("[data-action='download-detail-images']");
   if (!loading || !grid) return;
 
   window.clearTimeout(detailImageGenerationTimer);
+  memberState.credits -= estimate;
+  detail.dataset.imageHold = String(estimate);
+  detail.dataset.imageGenerating = "true";
+  renderCreditBalance();
   button.disabled = true;
   button.textContent = "生成中...";
   if (empty) empty.hidden = true;
+  if (downloadButton) downloadButton.disabled = true;
   grid.hidden = true;
   grid.replaceChildren();
   loading.hidden = false;
 
   detailImageGenerationTimer = window.setTimeout(() => {
+    const demoMode = new URLSearchParams(window.location.search).get("demo");
+    if (demoMode === "image-fail") {
+      memberState.credits += estimate;
+      delete detail.dataset.imageHold;
+      delete detail.dataset.imageGenerating;
+      loading.hidden = true;
+      if (empty) {
+        empty.hidden = false;
+        const label = empty.querySelector("strong");
+        if (label) label.textContent = `生成失败，${estimate} 积分已返还`;
+      }
+      button.disabled = false;
+      button.textContent = "重新生成";
+      addCreditLedgerEntry("图片生成失败，冻结积分返还", "返还", estimate);
+      renderCreditBalance();
+      updateDetailImageEconomics(detail);
+      detailImageGenerationTimer = null;
+      return;
+    }
+
     const items = detailGeneratedImages.slice(0, count).map((item, index) => {
       const figure = document.createElement("figure");
       figure.className = "generated-image-item";
@@ -2192,10 +2632,263 @@ function generateDetailImages(button) {
     grid.replaceChildren(...items);
     loading.hidden = true;
     grid.hidden = false;
+    delete detail.dataset.imageHold;
+    delete detail.dataset.imageGenerating;
     button.disabled = false;
     button.textContent = "重新生成";
+    if (downloadButton) downloadButton.disabled = false;
+    const imageTypeLabel = detail.dataset.imageType === "product" ? "商品展示图" : "内容场景图";
+    const qualityLabel = detail.dataset.imageQuality === "quality" ? "高质量" : "标准";
+    addCreditLedgerEntry(`生成 ${count} 张${qualityLabel}${imageTypeLabel}`, "消费", -estimate);
+    renderCreditBalance();
+    updateDetailImageEconomics(detail);
     detailImageGenerationTimer = null;
   }, 2200);
+}
+
+function getNoteDetailText(detail, includeAll = false) {
+  const title = detail?.querySelector("[data-detail-title], [data-history-detail-title]")?.textContent.trim() || "";
+  const body = detail?.querySelector("[data-detail-body], [data-history-detail-body]")?.textContent.trim() || "";
+  const topics = [...(detail?.querySelectorAll("[data-detail-topics] span, [data-history-detail-topics] span") || [])]
+    .map((item) => item.textContent.trim())
+    .join(" ");
+  if (!includeAll) return { title, body, topics };
+  return [title, body, topics].filter(Boolean).join("\n\n");
+}
+
+function copyText(text, successMessage) {
+  if (!text) return;
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.append(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+  navigator.clipboard?.writeText(text).catch(() => {});
+  showToast(successMessage);
+}
+
+function downloadDetailImages(detail) {
+  const images = [...(detail?.querySelectorAll("[data-detail-image-grid] img") || [])];
+  if (!images.length) return;
+  images.forEach((image, index) => {
+    const link = document.createElement("a");
+    link.href = image.src;
+    link.download = `babu-note-image-${index + 1}.${image.src.includes(".png") ? "png" : "webp"}`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  });
+  showToast(`开始下载 ${images.length} 张图片`);
+}
+
+function clearPaymentTimers() {
+  window.clearInterval(paymentCountdownTimer);
+  window.clearTimeout(paymentAutoTimer);
+  paymentCountdownTimer = null;
+  paymentAutoTimer = null;
+}
+
+function renderPaymentQr() {
+  const grid = document.querySelector("[data-payment-qr]");
+  if (!grid) return;
+  const size = 21;
+  const channelSeed = paymentChannel === "wechat" ? 3 : 7;
+  const isFinderCell = (row, column, originRow, originColumn) => {
+    const localRow = row - originRow;
+    const localColumn = column - originColumn;
+    if (localRow < 0 || localColumn < 0 || localRow > 6 || localColumn > 6) return false;
+    const edge = localRow === 0 || localRow === 6 || localColumn === 0 || localColumn === 6;
+    const center = localRow >= 2 && localRow <= 4 && localColumn >= 2 && localColumn <= 4;
+    return edge || center;
+  };
+  const cells = [];
+  for (let row = 0; row < size; row += 1) {
+    for (let column = 0; column < size; column += 1) {
+      const finder = isFinderCell(row, column, 0, 0)
+        || isFinderCell(row, column, 0, size - 7)
+        || isFinderCell(row, column, size - 7, 0);
+      const payload = ((row * 13 + column * 7 + row * column + channelSeed) % 5) < 2;
+      const cell = document.createElement("i");
+      cell.classList.toggle("on", finder || payload);
+      cells.push(cell);
+    }
+  }
+  grid.replaceChildren(...cells);
+}
+
+function updatePaymentCountdown() {
+  const display = document.querySelector("[data-payment-countdown]");
+  const minutes = Math.floor(paymentSecondsRemaining / 60);
+  const seconds = String(paymentSecondsRemaining % 60).padStart(2, "0");
+  if (display) display.textContent = `${String(minutes).padStart(2, "0")}:${seconds}`;
+  if (paymentSecondsRemaining <= 0) {
+    showPaymentResult("timeout");
+    return;
+  }
+  paymentSecondsRemaining -= 1;
+}
+
+function openPayment(button) {
+  if (!button) return;
+  const productType = button.dataset.productType;
+  if (productType === "points" && !memberState.active) {
+    showToast("会员已到期，请先续费");
+    return;
+  }
+  paymentIntent = {
+    type: productType,
+    name: button.dataset.productName || "会员方案",
+    price: Number(button.dataset.productPrice) || 0,
+    creditGrant: Number(button.dataset.creditGrant) || 0,
+  };
+  paymentChannel = "wechat";
+  paymentSecondsRemaining = 300;
+  clearPaymentTimers();
+
+  const modal = document.querySelector("[data-payment-modal]");
+  const checkout = document.querySelector("[data-payment-checkout]");
+  const result = document.querySelector("[data-payment-result]");
+  const title = document.querySelector("[data-payment-title]");
+  const product = document.querySelector("[data-payment-product]");
+  const price = document.querySelector("[data-payment-price]");
+  const demoActions = document.querySelector("[data-payment-demo-actions]");
+  if (!modal || !checkout || !result) return;
+  modal.hidden = false;
+  checkout.hidden = false;
+  result.hidden = true;
+  result.classList.remove("is-error");
+  if (title) title.textContent = paymentIntent.type === "membership" ? `开通${paymentIntent.name}` : `购买${paymentIntent.name}`;
+  if (product) product.textContent = paymentIntent.name;
+  if (price) price.textContent = String(paymentIntent.price);
+  if (demoActions) demoActions.hidden = !new URLSearchParams(window.location.search).has("demo");
+  setPaymentChannel("wechat");
+  updatePaymentCountdown();
+  paymentCountdownTimer = window.setInterval(updatePaymentCountdown, 1000);
+  if (!new URLSearchParams(window.location.search).has("demo")) {
+    paymentAutoTimer = window.setTimeout(() => showPaymentResult("success"), 2800);
+  }
+}
+
+function closePayment() {
+  clearPaymentTimers();
+  const modal = document.querySelector("[data-payment-modal]");
+  if (modal) modal.hidden = true;
+}
+
+function setPaymentChannel(channel) {
+  paymentChannel = channel === "alipay" ? "alipay" : "wechat";
+  document.querySelectorAll("[data-payment-channel]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.paymentChannel === paymentChannel);
+  });
+  const label = document.querySelector("[data-payment-channel-label]");
+  if (label) label.textContent = paymentChannel === "wechat" ? "请使用微信扫码" : "请使用支付宝扫码";
+  renderPaymentQr();
+}
+
+function applySuccessfulPayment() {
+  if (!paymentIntent) return;
+  if (paymentIntent.type === "membership") {
+    const wasActive = memberState.active;
+    memberState.active = true;
+    memberState.plan = paymentIntent.name;
+    memberState.expiresAt = paymentIntent.name === "月会员"
+      ? "2026 年 9 月 7 日"
+      : paymentIntent.name === "季度会员" ? "2026 年 11 月 7 日" : "2027 年 8 月 7 日";
+    if (!wasActive) {
+      memberState.credits += 1000;
+      addCreditLedgerEntry(`${paymentIntent.name}首月积分`, "发放", 1000);
+    }
+  } else {
+    memberState.credits += paymentIntent.creditGrant;
+    addCreditLedgerEntry(`购买 ${paymentIntent.name}`, "购买", paymentIntent.creditGrant);
+  }
+  renderProfileScreen();
+  renderCreditBalance();
+  updateGenerationEconomics();
+}
+
+function showPaymentResult(status) {
+  clearPaymentTimers();
+  const checkout = document.querySelector("[data-payment-checkout]");
+  const result = document.querySelector("[data-payment-result]");
+  const icon = document.querySelector("[data-payment-result-icon]");
+  const title = document.querySelector("[data-payment-result-title]");
+  const copy = document.querySelector("[data-payment-result-copy]");
+  const finish = result?.querySelector("[data-action='finish-payment']");
+  const retry = result?.querySelector("[data-action='retry-payment']");
+  if (!checkout || !result || !icon || !title || !copy || !finish || !retry) return;
+  checkout.hidden = true;
+  result.hidden = false;
+  const success = status === "success";
+  result.classList.toggle("is-error", !success);
+  icon.textContent = success ? "✓" : "!";
+  retry.hidden = success;
+  finish.textContent = success ? "完成" : "关闭";
+
+  if (success) {
+    applySuccessfulPayment();
+    title.textContent = "支付成功";
+    copy.textContent = paymentIntent?.type === "membership" ? "会员权益已经生效。" : `${paymentIntent?.creditGrant || 0} 积分已经到账。`;
+  } else if (status === "timeout") {
+    title.textContent = "二维码已超时";
+    copy.textContent = "本次未扣款，刷新二维码后可继续支付。";
+  } else {
+    title.textContent = "支付未完成";
+    copy.textContent = "本次未扣款，请重新扫码或更换支付方式。";
+  }
+}
+
+function retryPayment() {
+  const checkout = document.querySelector("[data-payment-checkout]");
+  const result = document.querySelector("[data-payment-result]");
+  if (!checkout || !result) return;
+  paymentSecondsRemaining = 300;
+  checkout.hidden = false;
+  result.hidden = true;
+  renderPaymentQr();
+  updatePaymentCountdown();
+  paymentCountdownTimer = window.setInterval(updatePaymentCountdown, 1000);
+  if (!new URLSearchParams(window.location.search).has("demo")) {
+    paymentAutoTimer = window.setTimeout(() => showPaymentResult("success"), 2800);
+  }
+}
+
+function attachNoteDetailActions() {
+  document.querySelectorAll("[data-note-detail-shell]").forEach((detail) => {
+    detail.querySelectorAll("[data-image-type]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        selectDetailImageOption(detail, "type", event.currentTarget.dataset.imageType);
+      });
+    });
+    detail.querySelectorAll("[data-image-quality]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        selectDetailImageOption(detail, "quality", event.currentTarget.dataset.imageQuality);
+      });
+    });
+    detail.querySelector("[data-action='generate-detail-images']")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      generateDetailImages(event.currentTarget);
+    });
+    detail.querySelector("[data-action='download-detail-images']")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      downloadDetailImages(detail);
+    });
+    detail.querySelectorAll("[data-action='copy-note-title'], [data-action='copy-note-body'], [data-action='copy-note-all']").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const action = event.currentTarget.dataset.action;
+        const note = getNoteDetailText(detail);
+        if (action === "copy-note-title") copyText(note.title, "标题已复制");
+        if (action === "copy-note-body") copyText(note.body, "正文已复制");
+        if (action === "copy-note-all") copyText(getNoteDetailText(detail, true), "笔记已复制");
+      });
+    });
+  });
 }
 
 function openInlineNoteDetail(card) {
@@ -2251,6 +2944,19 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const paymentModal = document.querySelector("[data-payment-modal]");
+  if (paymentModal && event.target === paymentModal) {
+    closePayment();
+    return;
+  }
+
+  const qualityConsentModal = document.querySelector("[data-quality-consent-modal]");
+  if (qualityConsentModal && event.target === qualityConsentModal) {
+    pendingQualitySelection = null;
+    closeQualityConsent();
+    return;
+  }
+
   if (event.target.closest("[data-home-preview]")) return;
 
   if (!event.target.closest(".production-account-switcher")) {
@@ -2299,7 +3005,16 @@ document.addEventListener("click", (event) => {
       showToast("当前暂无账号");
       return;
     }
+    if (navBtn.dataset.screen === "profile") {
+      currentProfileTab = navBtn.dataset.profileTarget || "account";
+    }
     navigate(navBtn.dataset.screen);
+    return;
+  }
+
+  const profileTabBtn = event.target.closest("[data-profile-tab]");
+  if (profileTabBtn) {
+    switchProfileTab(profileTabBtn.dataset.profileTab);
     return;
   }
 
@@ -2399,6 +3114,30 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const textQualityBtn = event.target.closest("[data-text-quality]");
+  if (textQualityBtn) {
+    selectTextQuality(textQualityBtn.dataset.textQuality);
+    return;
+  }
+
+  const imageTypeBtn = event.target.closest("[data-image-type]");
+  if (imageTypeBtn) {
+    selectDetailImageOption(imageTypeBtn.closest("[data-note-detail-shell]"), "type", imageTypeBtn.dataset.imageType);
+    return;
+  }
+
+  const imageQualityBtn = event.target.closest("[data-image-quality]");
+  if (imageQualityBtn) {
+    selectDetailImageOption(imageQualityBtn.closest("[data-note-detail-shell]"), "quality", imageQualityBtn.dataset.imageQuality);
+    return;
+  }
+
+  const paymentChannelBtn = event.target.closest("[data-payment-channel]");
+  if (paymentChannelBtn) {
+    setPaymentChannel(paymentChannelBtn.dataset.paymentChannel);
+    return;
+  }
+
   const choiceBtn = event.target.closest("[data-choice]");
   if (choiceBtn) {
     const group = choiceBtn.closest(".option-group");
@@ -2415,6 +3154,7 @@ document.addEventListener("click", (event) => {
         }
       }
       if (group.classList.contains("pillar-option-group")) resetProductionPreview();
+      if (group.closest(".generation-command-panel")) updateGenerationEconomics();
     } else {
       choiceBtn.classList.toggle("selected");
     }
@@ -2465,6 +3205,43 @@ document.addEventListener("click", (event) => {
       updateProfilePassword();
       return;
     }
+    if (action === "open-profile-membership") {
+      openProfileMembership();
+      return;
+    }
+    if (action === "open-payment") {
+      openPayment(actionBtn);
+      return;
+    }
+    if (action === "close-payment" || action === "finish-payment") {
+      closePayment();
+      return;
+    }
+    if (action === "retry-payment") {
+      retryPayment();
+      return;
+    }
+    if (action === "simulate-payment-success") {
+      showPaymentResult("success");
+      return;
+    }
+    if (action === "simulate-payment-failed") {
+      showPaymentResult("failed");
+      return;
+    }
+    if (action === "simulate-payment-timeout") {
+      showPaymentResult("timeout");
+      return;
+    }
+    if (action === "cancel-quality-consent") {
+      pendingQualitySelection = null;
+      closeQualityConsent();
+      return;
+    }
+    if (action === "confirm-quality-consent") {
+      confirmQualityConsent();
+      return;
+    }
     if (action === "close-login-modal") {
       closeLoginModal();
       return;
@@ -2510,6 +3287,22 @@ document.addEventListener("click", (event) => {
     }
     if (action === "increase-note-count") {
       adjustNoteCount(1);
+      return;
+    }
+    if (action === "retry-generate-notes") {
+      generateNotes();
+      return;
+    }
+    if (["copy-note-title", "copy-note-body", "copy-note-all"].includes(action)) {
+      const detail = actionBtn.closest("[data-note-detail-shell]");
+      const note = getNoteDetailText(detail);
+      if (action === "copy-note-title") copyText(note.title, "标题已复制");
+      if (action === "copy-note-body") copyText(note.body, "正文已复制");
+      if (action === "copy-note-all") copyText(getNoteDetailText(detail, true), "笔记已复制");
+      return;
+    }
+    if (action === "download-detail-images") {
+      downloadDetailImages(actionBtn.closest("[data-note-detail-shell]"));
       return;
     }
     if (action === "parse-account" || action === "parse-account-fail") {
@@ -2591,6 +3384,23 @@ document.querySelector("[data-chat-input]")?.addEventListener("keydown", (event)
   sendChatMessage();
 });
 
+document.addEventListener("change", (event) => {
+  if (event.target.matches("[data-detail-image-count]")) {
+    const detail = event.target.closest("[data-note-detail-shell]");
+    updateDetailImageEconomics(detail);
+    resetDetailImageOutput(detail);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (!document.querySelector("[data-payment-modal]")?.hidden) closePayment();
+  if (!document.querySelector("[data-quality-consent-modal]")?.hidden) {
+    pendingQualitySelection = null;
+    closeQualityConsent();
+  }
+});
+
 document.querySelector("[data-view='create'] [data-account-link]")?.addEventListener("input", (event) => {
   const parser = event.target.closest("[data-create-parser]");
   if (!parser || parser.dataset.parseState === "loading") return;
@@ -2623,6 +3433,7 @@ document.querySelector("[data-manual-avatar-upload]")?.addEventListener("change"
 switchKnowledgeTab("basic");
 switchGenerationMode("pillar");
 attachProductionSettings();
+attachNoteDetailActions();
 
 document.addEventListener("input", schedulePrototypeSessionPersist);
 document.addEventListener("change", schedulePrototypeSessionPersist);
@@ -2659,6 +3470,19 @@ if (restoredSession && applyPrototypeSession(restoredSession)) {
   selectedAccountId = null;
   editingAccountId = null;
   navigate("create", { skipHistory: true });
+} else if (["low-credit", "expired", "generation-fail", "image-fail"].includes(demoMode)) {
+  setScenario("complete");
+  setLoggedIn(true);
+  selectedAccountId = savedAccounts[0]?.id || null;
+  if (demoMode === "low-credit") memberState.credits = 2;
+  if (demoMode === "expired") memberState.active = false;
+  navigate("production", { skipHistory: true });
+} else if (demoMode === "membership") {
+  setScenario("complete");
+  setLoggedIn(true);
+  selectedAccountId = savedAccounts[0]?.id || null;
+  currentProfileTab = "membership";
+  navigate("profile", { skipHistory: true });
 } else {
   navigate(isLoggedIn ? "projects" : "login");
 }

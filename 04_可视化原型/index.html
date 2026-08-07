@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#FF4D3D" />
     <title>巴布 - 自媒体运营助理</title>
     <link rel="icon" type="image/png" href="./assets/brand/babu-favicon.png" />
-    <link rel="stylesheet" href="./styles.css?v=20260803-home-auth-v31" />
+    <link rel="stylesheet" href="./styles.css?v=20260807-commerce-v49" />
     <style id="workspace-page-layouts">
       body.workspace-mode[data-current-screen="production"] {
         --creation-content-max: 1920px;
@@ -1778,11 +1778,11 @@
             </button>
           </div>
           <div class="workspace-nav-bottom">
-            <div class="workspace-credit">
+            <button class="workspace-credit" type="button" data-screen="profile" data-profile-target="membership" aria-label="查看会员与积分" title="会员与积分">
               <img src="./assets/icons/zap.svg" alt="" />
               <span>积分</span>
-              <strong>100</strong>
-            </div>
+              <strong data-credit-balance>1000</strong>
+            </button>
             <div class="workspace-profile-menu">
               <button class="workspace-profile-trigger" type="button" data-screen="profile" aria-label="个人中心" title="个人中心">
                 <img src="./assets/icons/user-round.svg" alt="" />
@@ -1954,13 +1954,13 @@
               </header>
 
               <div class="profile-page-tabs" role="tablist" aria-label="个人中心功能">
-                <button class="active" type="button" role="tab" aria-selected="true">注册信息</button>
-                <button type="button" role="tab" aria-disabled="true" disabled>充值 <span>即将开放</span></button>
-                <button type="button" role="tab" aria-disabled="true" disabled>消费记录 <span>即将开放</span></button>
+                <button class="active" type="button" role="tab" aria-selected="true" data-profile-tab="account">注册信息</button>
+                <button type="button" role="tab" aria-selected="false" data-profile-tab="membership">会员与积分</button>
+                <button type="button" role="tab" aria-selected="false" data-profile-tab="ledger">消费记录</button>
               </div>
 
               <div class="profile-page-layout">
-                <div class="profile-page-main">
+                <div class="profile-page-main" data-profile-panel="account">
                   <section class="profile-section" aria-labelledby="profileAccountTitle">
                     <div class="profile-section-head">
                       <h3 id="profileAccountTitle">登录账号</h3>
@@ -1987,6 +1987,86 @@
                         <button class="profile-password-submit" type="button" data-action="update-profile-password">修改密码</button>
                         <p class="profile-password-feedback" data-profile-password-feedback role="status" hidden></p>
                       </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="profile-page-main profile-membership-panel" data-profile-panel="membership" hidden>
+                  <section class="membership-summary" data-membership-summary>
+                    <div class="membership-summary-copy">
+                      <span class="membership-status-badge" data-membership-status>年度会员</span>
+                      <h3 data-membership-title>会员有效期至 2027 年 8 月 7 日</h3>
+                      <p data-membership-description>每月 1 日发放 1000 积分，本月剩余 <strong data-membership-balance>1000</strong> 积分。</p>
+                    </div>
+                    <div class="membership-summary-metrics">
+                      <div><span>可用积分</span><strong data-profile-credit-balance>1000</strong></div>
+                      <div><span>账号数量</span><strong>不限</strong></div>
+                    </div>
+                  </section>
+
+                  <section class="profile-commerce-section" aria-labelledby="membershipPlansTitle">
+                    <div class="profile-commerce-head">
+                      <div>
+                        <h3 id="membershipPlansTitle">会员方案</h3>
+                        <p>权益相同，按周期选择。</p>
+                      </div>
+                    </div>
+                    <div class="membership-plan-grid">
+                      <article class="membership-plan">
+                        <div><span>月会员</span><strong><b>88</b> 元</strong></div>
+                        <p>每月发放 1000 积分</p>
+                        <button type="button" data-action="open-payment" data-product-type="membership" data-product-name="月会员" data-product-price="88" data-credit-grant="1000">开通</button>
+                      </article>
+                      <article class="membership-plan">
+                        <div><span>季度会员</span><strong><b>228</b> 元</strong></div>
+                        <p>每月发放 1000 积分</p>
+                        <button type="button" data-action="open-payment" data-product-type="membership" data-product-name="季度会员" data-product-price="228" data-credit-grant="1000">开通</button>
+                      </article>
+                      <article class="membership-plan recommended">
+                        <span class="plan-recommendation">推荐</span>
+                        <div><span>年会员</span><strong><b>688</b> 元</strong></div>
+                        <p>每月发放 1000 积分</p>
+                        <button type="button" data-action="open-payment" data-product-type="membership" data-product-name="年会员" data-product-price="688" data-credit-grant="1000">续费</button>
+                      </article>
+                    </div>
+                    <div class="membership-benefits" aria-label="会员权益">
+                      <span>无限添加账号</span>
+                      <span>文字与图片双模型</span>
+                      <span>账号资料关联生成</span>
+                      <span>创作历史长期保存</span>
+                    </div>
+                  </section>
+
+                  <section class="profile-commerce-section" aria-labelledby="pointPacksTitle">
+                    <div class="profile-commerce-head">
+                      <div>
+                        <h3 id="pointPacksTitle">购买积分</h3>
+                        <p data-point-purchase-note>仅会员可购买，积分在会员有效期内使用。</p>
+                      </div>
+                    </div>
+                    <div class="point-pack-grid">
+                      <article class="point-pack"><div><strong>300</strong><span>积分</span></div><button type="button" data-action="open-payment" data-product-type="points" data-product-name="300 积分" data-product-price="29" data-credit-grant="300">29 元</button></article>
+                      <article class="point-pack"><div><strong>1000</strong><span>积分</span></div><button type="button" data-action="open-payment" data-product-type="points" data-product-name="1000 积分" data-product-price="79" data-credit-grant="1000">79 元</button></article>
+                      <article class="point-pack"><div><strong>3000</strong><span>积分</span></div><button type="button" data-action="open-payment" data-product-type="points" data-product-name="3000 积分" data-product-price="199" data-credit-grant="3000">199 元</button></article>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="profile-page-main profile-ledger-panel" data-profile-panel="ledger" hidden>
+                  <section class="profile-commerce-section">
+                    <div class="profile-commerce-head ledger-head">
+                      <div>
+                        <h3>消费记录</h3>
+                        <p>查看积分发放、消费、购买和返还。</p>
+                      </div>
+                      <strong>当前 <span data-ledger-credit-balance>1000</span> 积分</strong>
+                    </div>
+                    <div class="credit-ledger" data-credit-ledger>
+                      <div class="credit-ledger-head" aria-hidden="true"><span>时间</span><span>说明</span><span>类型</span><span>积分</span></div>
+                      <div class="credit-ledger-row"><time>2026-08-07 09:00</time><strong>年度会员每月积分</strong><span>发放</span><b class="credit-increase">+1000</b></div>
+                      <div class="credit-ledger-row"><time>2026-08-06 15:36</time><strong>生成 3 篇标准笔记</strong><span>消费</span><b>-9</b></div>
+                      <div class="credit-ledger-row"><time>2026-08-06 15:28</time><strong>图片生成失败返还</strong><span>返还</span><b class="credit-increase">+18</b></div>
+                      <div class="credit-ledger-row"><time>2026-08-05 20:14</time><strong>生成 3 张标准配图</strong><span>消费</span><b>-18</b></div>
                     </div>
                   </section>
                 </div>
@@ -2660,6 +2740,17 @@
 
                     <section class="panel generation-command-panel">
                       <h3>2. 生成设置</h3>
+                      <div class="control-block generation-quality-control">
+                        <label>文字模式</label>
+                        <div class="quality-mode-group" role="radiogroup" aria-label="文字生成模式">
+                          <button class="quality-mode-option selected" type="button" data-text-quality="standard" aria-pressed="true">
+                            <strong>标准</strong><span>3 积分 / 篇</span>
+                          </button>
+                          <button class="quality-mode-option" type="button" data-text-quality="quality" aria-pressed="false">
+                            <strong>高质量</strong><span>6 积分 / 篇</span>
+                          </button>
+                        </div>
+                      </div>
                       <div class="control-block">
                         <label>字数</label>
                         <div class="option-group">
@@ -2686,9 +2777,39 @@
                           <button class="option-chip" type="button" data-choice="single">5 篇</button>
                         </div>
                       </div>
-                      <button class="primary-btn full-width" data-action="generate-notes">生成笔记</button>
+                      <div class="generation-action-block">
+                        <div class="generation-charge-summary">
+                          <span>预计消耗</span>
+                          <strong><b data-note-credit-estimate>9</b> 积分</strong>
+                          <small>当前 <span data-generation-credit-balance>1000</span></small>
+                        </div>
+                        <button class="primary-btn full-width" data-action="generate-notes">生成笔记</button>
+                      </div>
+                      <div class="generation-blocked-notice" data-generation-blocked hidden>
+                        <div><strong data-generation-blocked-title>积分不足</strong><span data-generation-blocked-copy>购买积分后继续生成。</span></div>
+                        <button type="button" data-action="open-profile-membership">查看会员与积分</button>
+                      </div>
                     </section>
                   </div>
+
+                  <section class="generation-progress" data-generation-progress hidden aria-live="polite">
+                    <div class="generation-progress-head">
+                      <div><span>正在生成</span><strong data-generation-progress-title>搜索相关资料</strong></div>
+                      <b data-generation-progress-cost>冻结 9 积分</b>
+                    </div>
+                    <div class="generation-stage-list">
+                      <div class="generation-stage active" data-generation-stage="search"><span>1</span><strong>搜索资料</strong></div>
+                      <div class="generation-stage" data-generation-stage="generate"><span>2</span><strong>生成内容</strong></div>
+                      <div class="generation-stage" data-generation-stage="check"><span>3</span><strong>质量检查</strong></div>
+                    </div>
+                    <div class="generation-progress-bar"><span data-generation-progress-bar></span></div>
+                    <p data-generation-progress-message>正在结合账号定位、商品资料和当前主线搜索相关信息。</p>
+                  </section>
+
+                  <section class="generation-result-state is-error" data-generation-error hidden role="status">
+                    <div><strong>本次生成未完成</strong><span data-generation-error-copy>本次未扣积分，冻结的 9 积分已返还。</span></div>
+                    <button type="button" data-action="retry-generate-notes">重新生成</button>
+                  </section>
 
                   <section class="production-preview-empty" data-production-preview-empty>
                     <img src="./assets/icons/panel-left.svg" alt="" />
@@ -2806,7 +2927,14 @@
                 </div>
                 <div class="inline-detail-scroll">
                   <section class="detail-section note-result-section">
-                    <h4>笔记正文</h4>
+                    <div class="detail-section-heading">
+                      <h4>笔记正文</h4>
+                      <div class="note-result-actions">
+                        <button type="button" data-action="copy-note-title">复制标题</button>
+                        <button type="button" data-action="copy-note-body">复制正文</button>
+                        <button type="button" data-action="copy-note-all">复制全部</button>
+                      </div>
+                    </div>
                     <div class="readonly-field">
                       <span class="readonly-field-label">标题</span>
                       <strong class="readonly-title" data-detail-title>猫碗旁边总是脏</strong>
@@ -2829,6 +2957,11 @@
                   <section class="detail-section image-generation-section">
                     <div class="panel-title-row">
                       <h4>生成图片</h4>
+                      <button class="download-generated-images" type="button" data-action="download-detail-images" disabled>下载图片</button>
+                    </div>
+                    <div class="image-generation-options">
+                      <div><span>图片类型</span><div class="image-option-group"><button class="selected" type="button" data-image-type="content">内容场景图</button><button type="button" data-image-type="product">商品展示图</button></div></div>
+                      <div><span>图片模式</span><div class="image-option-group"><button class="selected" type="button" data-image-quality="standard">标准</button><button type="button" data-image-quality="quality">高质量</button></div></div>
                     </div>
                     <div class="image-generation-controls">
                       <label class="image-count-field">
@@ -2842,6 +2975,7 @@
                           <option value="6">6 张</option>
                         </select>
                       </label>
+                      <div class="image-credit-estimate">预计 <strong data-image-credit-estimate>30</strong> 积分</div>
                       <button class="primary-btn generate-detail-images-btn" type="button" data-action="generate-detail-images">生成配图</button>
                     </div>
                     <div class="image-generation-state" data-detail-image-empty>
@@ -2900,7 +3034,14 @@
               </div>
               <div class="history-note-detail-grid">
                 <section class="detail-section note-result-section">
-                  <h3>笔记正文</h3>
+                  <div class="detail-section-heading">
+                    <h3>笔记正文</h3>
+                    <div class="note-result-actions">
+                      <button type="button" data-action="copy-note-title">复制标题</button>
+                      <button type="button" data-action="copy-note-body">复制正文</button>
+                      <button type="button" data-action="copy-note-all">复制全部</button>
+                    </div>
+                  </div>
                   <div class="readonly-field">
                     <span class="readonly-field-label">标题</span>
                     <strong class="readonly-title" data-history-detail-title>猫碗旁边总是脏</strong>
@@ -2917,6 +3058,11 @@
                 <section class="detail-section image-generation-section">
                   <div class="panel-title-row">
                     <h3>生成图片</h3>
+                    <button class="download-generated-images" type="button" data-action="download-detail-images" disabled>下载图片</button>
+                  </div>
+                  <div class="image-generation-options">
+                    <div><span>图片类型</span><div class="image-option-group"><button class="selected" type="button" data-image-type="content">内容场景图</button><button type="button" data-image-type="product">商品展示图</button></div></div>
+                    <div><span>图片模式</span><div class="image-option-group"><button class="selected" type="button" data-image-quality="standard">标准</button><button type="button" data-image-quality="quality">高质量</button></div></div>
                   </div>
                   <div class="image-generation-controls">
                     <label class="image-count-field">
@@ -2930,6 +3076,7 @@
                         <option value="6">6 张</option>
                       </select>
                     </label>
+                    <div class="image-credit-estimate">预计 <strong data-image-credit-estimate>30</strong> 积分</div>
                     <button class="primary-btn generate-detail-images-btn" type="button" data-action="generate-detail-images">生成配图</button>
                   </div>
                   <div class="image-generation-state" data-detail-image-empty>
@@ -2959,6 +3106,42 @@
       </div>
     </div>
 
+    <div class="commerce-modal-backdrop" data-payment-modal hidden>
+      <div class="commerce-modal" role="dialog" aria-modal="true" aria-labelledby="paymentModalTitle">
+        <div class="commerce-modal-head">
+          <div><span>扫码支付</span><h2 id="paymentModalTitle" data-payment-title>开通年会员</h2></div>
+          <button type="button" data-action="close-payment" aria-label="关闭">×</button>
+        </div>
+        <div data-payment-checkout>
+          <div class="payment-channel-tabs" role="tablist" aria-label="支付方式">
+            <button class="active" type="button" data-payment-channel="wechat">微信支付</button>
+            <button type="button" data-payment-channel="alipay">支付宝</button>
+          </div>
+          <div class="payment-amount"><span data-payment-product>年会员</span><strong>¥<b data-payment-price>688</b></strong></div>
+          <div class="payment-qr-wrap"><div class="payment-qr-grid" data-payment-qr aria-label="付款二维码"></div><span data-payment-channel-label>请使用微信扫码</span></div>
+          <div class="payment-waiting"><i></i><span>等待付款</span><time data-payment-countdown>05:00</time></div>
+          <div class="payment-demo-actions" data-payment-demo-actions hidden>
+            <span>演示状态</span><button type="button" data-action="simulate-payment-success">成功</button><button type="button" data-action="simulate-payment-failed">失败</button><button type="button" data-action="simulate-payment-timeout">超时</button>
+          </div>
+        </div>
+        <div class="payment-result" data-payment-result hidden>
+          <span class="payment-result-icon" data-payment-result-icon>✓</span>
+          <h3 data-payment-result-title>支付成功</h3>
+          <p data-payment-result-copy>会员权益已经生效。</p>
+          <button type="button" data-action="finish-payment">完成</button>
+          <button class="payment-retry" type="button" data-action="retry-payment" hidden>重新扫码</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="commerce-modal-backdrop" data-quality-consent-modal hidden>
+      <div class="commerce-modal quality-consent-modal" role="dialog" aria-modal="true" aria-labelledby="qualityConsentTitle">
+        <div class="commerce-modal-head"><div><span>高质量模式</span><h2 id="qualityConsentTitle">确认使用第三方模型</h2></div><button type="button" data-action="cancel-quality-consent" aria-label="关闭">×</button></div>
+        <p>为提升生成质量，本次任务会将创作所需的账号定位、商品资料和生成要求发送至第三方模型服务，不包含登录密码和支付信息。</p>
+        <div class="quality-consent-actions"><button type="button" data-action="cancel-quality-consent">取消</button><button class="confirm" type="button" data-action="confirm-quality-consent">同意并使用</button></div>
+      </div>
+    </div>
+
     <div class="modal-backdrop" data-login-modal hidden>
       <div class="login-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
         <div class="modal-head">
@@ -2975,6 +3158,6 @@
       </div>
     </div>
 
-    <script src="./script.js?v=20260807-profile-v42"></script>
+    <script src="./script.js?v=20260807-commerce-v47"></script>
 </body>
 </html>
